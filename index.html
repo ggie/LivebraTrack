@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ICT Strand — Attendance & Score Tracker (Local Demo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f7fb;           /* page background */
+    --card:#ffffff;         /* card background */
+    --muted:#6b7280;        /* muted text */
+    --text:#0f1724;         /* main text */
+    --accent:#0ea5a4;       /* teal accent (modernized) */
+    --accent-2:#3b82f6;     /* blue accent */
+    --danger:#ef4444;
+    --glass: rgba(14,165,164,0.08);
+    --radius:12px;
+    --shadow: 0 8px 30px rgba(2,6,23,0.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:linear-gradient(180deg, #f7fbfb 0%, var(--bg) 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  header{
+    background:linear-gradient(90deg, rgba(59,130,246,0.06), rgba(14,165,164,0.06));
+    border-bottom:1px solid rgba(15,23,36,0.03);
+    padding:18px 20px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+  }
+  .logo{
+    width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:white;font-weight:700;box-shadow:0 6px 20px rgba(14,165,164,0.14);
+  }
+  .brand h1{font-size:18px;margin:0}
+  .brand p{margin:0;font-size:13px;color:var(--muted)}
+
+  .container{max-width:1150px;margin:26px auto;padding:0 18px}
+
+  .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+
+  .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(2,6,23,0.03)}
+
+  .tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{padding:8px 12px;border-radius:10px;background:var(--glass);font-weight:600;color:var(--muted);cursor:pointer}
+  .tab.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042027}
+
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(2,6,23,0.06);background:transparent;color:var(--text);font-size:14px}
+  .row{display:flex;gap:8px}
+  .row> *{flex:1}
+  button{background:var(--accent);border:none;color:#042027;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid rgba(2,6,23,0.06);color:var(--muted);font-weight:600}
+  button.danger{background:var(--danger);color:white}
+  small.muted{color:var(--muted);font-size:13px}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;border-bottom:1px dashed rgba(2,6,23,0.04);font-size:13px;text-align:left}
+  th{background:transparent;color:var(--muted);font-weight:700}
+  .notice{background:linear-gradient(180deg, rgba(14,165,164,0.06), rgba(59,130,246,0.03));padding:10px;border-radius:8px;color:var(--muted);font-size:13px}
+
+  .center{display:flex;align-items:center;justify-content:center}
+  .muted{color:var(--muted);font-size:13px}
+  .small{font-size:13px}
+  footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px;padding:12px}
+
+  /* small helpers */
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(2,6,23,0.04);font-weight:700;color:var(--muted);font-size:13px}
+  .tag-accent{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042027;padding:6px 10px;border-radius:999px;font-weight:700}
+
+  /* compact forms inside cards */
+  .compact .row{gap:6px}
+  .compact input{padding:8px;border-radius:8px}
+
+  /* responsive tables scroll */
+  .table-wrap{overflow:auto;border-radius:8px}
+  .actions button{margin-right:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">ICT</div>
+    <div>
+      <h1>ICT Strand — SHS Attendance & Score</h1>
+      <p>Senior High School — local demo · QR = gateway to this site</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:center">
+    <div class="small muted">Teacher demo account</div>
+    <div class="pill">teacher1 / teacher1</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid">
+    <!-- LEFT: Student / Section Card -->
+    <div class="card">
+      <div class="tabs" id="mainTabs">
+        <div class="tab active" data-tab="scan">Gateway / Join</div>
+        <div class="tab" data-tab="student">Student Panel</div>
+        <div class="tab" data-tab="teacher">Teacher Login</div>
+      </div>
+
+      <!-- GATEWAY / JOIN -->
+      <div id="scan" class="tabcontent">
+        <div class="small muted">QR Gateway: show a printed/virtual QR that links to this page with query params. Examples:</div>
+        <div style="margin-top:8px" class="small muted"><code>?grade=11&strand=ICT&section=ICT-11A&student=2025001&name=Juan%20Dela%20Cruz</code></div>
+        <div style="height:12px"></div>
+
+        <div class="compact">
+          <label>Grade</label>
+          <select id="gwGrade">
+            <option value="">Select grade</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+
+          <label style="margin-top:10px">Strand</label>
+          <select id="gwStrand">
+            <option>ICT</option>
+          </select>
+
+          <label style="margin-top:10px">Section code</label>
+          <input id="gwSection" placeholder="e.g. ICT-11A">
+
+          <label style="margin-top:10px">Student ID</label>
+          <input id="gwStudentId" placeholder="e.g. 2025001">
+
+          <label style="margin-top:10px">Full name</label>
+          <input id="gwStudentName" placeholder="Juan Dela Cruz">
+
+          <div style="height:10px"></div>
+          <div class="row">
+            <button id="gwJoinBtn">Join Section</button>
+            <button class="ghost" id="gwReset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDENT PANEL -->
+      <div id="student" class="tabcontent" style="display:none">
+        <div class="small muted">Student Panel — Attendance and Score Tracking</div>
+        <div style="height:12px"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="muted small">Active</div>
+            <h3 id="sectionTitle" style="margin:6px 0 0 0">Not joined</h3>
+            <div class="small muted" id="studentTitle">—</div>
+          </div>
+          <div id="studentActions">
+            <button id="checkinBtn" style="display:none">Check-in (Attend)</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div id="attendanceArea" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="small muted">Attendance (latest first)</div>
+            <div class="small muted">Today: <span id="todayLabel"></span></div>
+          </div>
+
+          <div style="height:8px"></div>
+          <div id="attendanceMsg" class="notice" style="display:none"></div>
+
+          <div class="table-wrap">
+            <table id="attendanceTable">
+              <thead><tr><th>Student</th><th>Date</th><th>Time</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="height:14px"></div>
+        <div id="scoresArea" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="small muted">Score Monitoring</div>
+            <div>
+              <button class="ghost" id="exportMyScoresBtn" style="display:none">Export My Scores</button>
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+          <form id="scoreForm" class="compact">
+            <div class="row">
+              <input id="subj" placeholder="Subject (e.g. Programming)">
+              <input id="score" placeholder="Score (e.g. 10)">
+              <input id="total" placeholder="Total (e.g. 10)">
+            </div>
+            <div style="height:8px"></div>
+            <div class="row">
+              <input id="sdate" type="date">
+              <input id="notes" placeholder="Notes (optional)">
+            </div>
+            <div style="height:8px"></div>
+            <div class="row">
+              <button type="submit">Save Score</button>
+              <button type="button" class="ghost" id="clearScore">Clear</button>
+            </div>
+          </form>
+
+          <div style="height:10px"></div>
+          <div class="table-wrap">
+            <table id="scoresTable">
+              <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TEACHER LOGIN -->
+      <div id="teacher" class="tabcontent" style="display:none">
+        <div class="small muted">Teacher admin (demo credentials)</div>
+        <div style="height:10px"></div>
+        <label>Email</label>
+        <input id="tEmail" placeholder="teacher1">
+        <label style="margin-top:8px">Password</label>
+        <input id="tPass" type="password" placeholder="teacher1">
+        <div style="height:10px"></div>
+        <div class="row">
+          <button id="tLogin">Login</button>
+          <button class="ghost" id="tClear">Clear</button>
+        </div>
+        <div style="height:8px"></div>
+        <div id="tNote" class="muted small">After login you'll be directed to the admin dashboard (local only).</div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Section / Admin Card -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="small muted">System</div>
+          <h2 style="margin:6px 0">ICT Strand — SHS</h2>
+          <div class="small muted">Local demo • data saved in browser (localStorage)</div>
+        </div>
+        <div style="text-align:right">
+          <div class="small muted">Today</div>
+          <div class="tag-accent" id="todayTag"></div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div id="quickJoin" class="compact">
+        <label>Quick join (use to test)</label>
+        <input id="qGrade" placeholder="Grade (11 or 12)" />
+        <input id="qSection" placeholder="Section (e.g. ICT-11A)" />
+        <input id="qStudent" placeholder="Student ID (e.g. 2025001)" />
+        <input id="qName" placeholder="Name (e.g. Juan Dela Cruz)" />
+        <div style="height:8px"></div>
+        <div class="row">
+          <button id="qJoin">Quick Join</button>
+          <button class="ghost" id="qClear">Clear</button>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div id="adminPreview">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="small muted">Admin Preview</div>
+          <div class="small muted">Sections: <span id="sectionsCount">0</span></div>
+        </div>
+        <div class="table-wrap" style="max-height:260px;overflow:auto">
+          <table>
+            <thead><tr><th>Section</th><th>#Students</th><th>Records</th></tr></thead>
+            <tbody id="sectionsTable"></tbody>
+          </table>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="small muted">Teacher actions:</div>
+        <div style="height:8px"></div>
+        <div class="row">
+          <button id="openAdmin" class="ghost">Open Admin Dashboard</button>
+          <button id="exportAll" class="ghost">Export All CSV</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>Built for demo • Keep using as prototype. For production move to a server/DB.</footer>
+</main>
+
+<!-- Admin Dashboard modal-ish (separate page-like area) -->
+<div id="adminScreen" style="display:none;padding:22px;position:fixed;inset:30px;background:rgba(8,10,13,0.6);z-index:60;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="card" style="overflow:auto;max-height:85vh">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <h3 style="margin:0">Teacher Dashboard</h3>
+          <div class="muted small">Signed in as <strong>teacher1</strong> (demo)</div>
+        </div>
+        <div>
+          <button id="adminClose" class="ghost">Close</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="flex:1;min-width:220px" class="card">
+          <div class="small muted">Search student</div>
+          <input id="adminSearch" placeholder="Student ID or name">
+        </div>
+
+        <div style="min-width:220px" class="card">
+          <div class="small muted">Filter section</div>
+          <input id="adminFilter" placeholder="e.g. ICT-11A">
+        </div>
+
+        <div style="min-width:220px" class="card center">
+          <div style="text-align:center">
+            <div class="small muted">Export options</div>
+            <div style="height:8px"></div>
+            <div class="row">
+              <button id="exportSection" class="ghost">Export Section</button>
+              <button id="exportStudents" class="ghost">Export Students</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="adminContent">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="small muted">Records</div>
+          <div>
+            <span class="small muted">Total students:</span> <strong id="adminTotal">0</strong>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="table-wrap">
+          <table id="adminTable">
+            <thead>
+              <tr>
+                <th>Student ID</th><th>Name</th><th>Grade</th><th>Section</th><th>#Att</th><th>#Scores</th><th>Recorded</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div style="height:12px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button id="adminSignOut" class="ghost">Sign out</button>
+        <button id="adminClose2" class="ghost">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ------------------------------
+  Data model (localStorage)
+  - Key per section: shs_<grade>_<strand>_<section>
+  - Structure:
+    {
+      meta: {grade, strand, section, createdAt},
+      students: {
+        "<studentId>": { id, name, grade, strand, section, recorded: false, attendance: [{date, time, ts}], scores: [{subject,score,total,date,notes,ts}] }
+      }
+    }
+--------------------------------*/
+
+const qs = s => document.querySelector(s);
+const qsa = s => document.querySelectorAll(s);
+
+/* Helpers */
+function keyFor(grade, strand, section){
+  return `shs_${String(grade||'').replace(/\s+/g,'')}_${String(strand||'').replace(/\s+/g,'')}_${String(section||'').replace(/\s+/g,'')}`.toLowerCase();
+}
+function nowDate(){ return new Date().toISOString().slice(0,10); }
+function nowTime(){ return new Date().toLocaleTimeString(); }
+function safe(v){ return (v||'').toString(); }
+function loadSection(k){ const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; }
+function saveSection(k, data){ localStorage.setItem(k, JSON.stringify(data)); }
+
+/* UI initial values */
+qs('#todayTag').textContent = (new Date()).toLocaleDateString();
+qs('#todayLabel').textContent = (new Date()).toLocaleDateString();
+
+/* Tabs */
+qs('#mainTabs').addEventListener('click', e=>{
+  if(!e.target.dataset.tab) return;
+  qsa('.tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  qsa('.tabcontent').forEach(tc=>tc.style.display='none');
+  qs('#'+e.target.dataset.tab).style.display='block';
+});
+
+/* Prefill from URL query (gateway) */
+(function prefillFromUrl(){
+  try{
+    const u = new URL(location.href);
+    const grade = u.searchParams.get('grade') || '';
+    const strand = u.searchParams.get('strand') || 'ICT';
+    const section = u.searchParams.get('section') || u.searchParams.get('sect') || '';
+    const student = u.searchParams.get('student') || u.searchParams.get('studentid') || '';
+    const name = u.searchParams.get('name') || '';
+    if(grade) qs('#gwGrade').value = grade;
+    if(strand) qs('#gwStrand').value = strand;
+    if(section) qs('#gwSection').value = section;
+    if(student) qs('#gwStudentId').value = student;
+    if(name) qs('#gwStudentName').value = decodeURIComponent(name);
+    // if minimum full info, auto-join
+    if(grade && strand && section && student && name){
+      setTimeout(()=> joinSection(grade, strand, section, student, decodeURIComponent(name)), 250);
+    }
+  }catch(e){}
+})();
+
+/* JOIN (gateway) */
+qs('#gwJoinBtn').addEventListener('click', ()=>{
+  const grade = qs('#gwGrade').value.trim();
+  const strand = qs('#gwStrand').value.trim();
+  const section = qs('#gwSection').value.trim();
+  const student = qs('#gwStudentId').value.trim();
+  const name = qs('#gwStudentName').value.trim();
+  if(!grade||!strand||!section||!student||!name){ alert('Fill all fields to join'); return; }
+  joinSection(grade, strand, section, student, name);
+});
+qs('#gwReset').addEventListener('click', ()=> {
+  qs('#gwGrade').value='';qs('#gwStrand').value='ICT';qs('#gwSection').value='';qs('#gwStudentId').value='';qs('#gwStudentName').value='';
+});
+
+/* Quick join */
+qs('#qJoin').addEventListener('click', ()=>{
+  const grade = qs('#qGrade').value.trim()||'11';
+  const section = qs('#qSection').value.trim()||'ICT-11A';
+  const student = qs('#qStudent').value.trim();
+  const name = qs('#qName').value.trim();
+  if(!student||!name){ alert('Enter quick Student ID and name'); return; }
+  joinSection(grade, 'ICT', section, student, name);
+});
+qs('#qClear').addEventListener('click', ()=> { qs('#qGrade').value='';qs('#qSection').value='';qs('#qStudent').value='';qs('#qName').value=''; });
+
+let CURRENT_SECTION_KEY = null;
+let CURRENT_STUDENT = null;
+
+/* joinSection creates/loads section and ensures student record exists */
+function joinSection(grade, strand, section, studentId, studentName){
+  const k = keyFor(grade, strand, section);
+  CURRENT_SECTION_KEY = k;
+  let data = loadSection(k);
+  if(!data){
+    data = { meta:{grade, strand, section, createdAt:Date.now()}, students:{} };
+  }
+  if(!data.students[studentId]){
+    data.students[studentId] = { id: studentId, name: studentName, grade, strand, section, createdAt: Date.now(), recorded:false, attendance:[], scores:[] };
+    saveSection(k, data);
+  } else {
+    // update name if changed
+    if(data.students[studentId].name !== studentName){
+      data.students[studentId].name = studentName;
+      saveSection(k, data);
+    }
+  }
+  CURRENT_STUDENT = studentId;
+  // switch to Student tab for UI
+  qsa('.tab').forEach(t=>t.classList.remove('active'));
+  qs('.tab[data-tab="student"]').classList.add('active');
+  qsa('.tabcontent').forEach(tc=>tc.style.display='none');
+  qs('#student').style.display='block';
+  // Update UI elements for student
+  qs('#sectionTitle').textContent = `${section} · G${grade} · ${strand}`;
+  qs('#studentTitle').textContent = `${studentName} (${studentId})`;
+  qs('#checkinBtn').style.display='inline-block';
+  qs('#attendanceArea').style.display='block';
+  qs('#scoresArea').style.display='block';
+  qs('#exportMyScoresBtn').style.display='inline-block';
+  renderAttendanceTable();
+  renderScoresTable();
+  updateSectionsPreview();
+}
+
+/* Attendance check-in */
+qs('#checkinBtn').addEventListener('click', ()=>{
+  if(!CURRENT_SECTION_KEY || !CURRENT_STUDENT){ alert('Join a section first'); return; }
+  const data = loadSection(CURRENT_SECTION_KEY);
+  const rec = data.students[CURRENT_STUDENT];
+  const date = nowDate();
+  const already = rec.attendance.some(a=>a.date===date);
+  if(already){
+    showTempMsg('#attendanceMsg', `You already checked in today (${date}).`, 2800);
+    return;
+  }
+  const a = { date, time: nowTime(), ts: Date.now() };
+  rec.attendance.push(a);
+  saveSection(CURRENT_SECTION_KEY, data);
+  renderAttendanceTable();
+  showTempMsg('#attendanceMsg', `Checked in: ${date} ${a.time}`, 2800);
+});
+
+/* renderAttendanceTable: flatten all attendance for section */
+function renderAttendanceTable(){
+  const tbody = qs('#attendanceTable tbody');
+  tbody.innerHTML = '';
+  if(!CURRENT_SECTION_KEY){ tbody.innerHTML = '<tr><td colspan="4" class="muted">Join a section first</td></tr>'; return; }
+  const data = loadSection(CURRENT_SECTION_KEY);
+  const rows = [];
+  Object.values(data.students).forEach(s=>{
+    s.attendance.forEach(a => rows.push({ student:s.name, id:s.id, date:a.date, time:a.time, ts:a.ts }));
+  });
+  rows.sort((a,b)=>b.ts-a.ts);
+  if(rows.length===0){ tbody.innerHTML = '<tr><td colspan="4" class="muted">No attendance yet</td></tr>'; return; }
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(r.student)}<br><small class="muted">${r.id}</small></td><td>${r.date}</td><td>${r.time}</td><td><button class="ghost" data-id="${r.id}" data-date="${r.date}">Remove</button></td>`;
+    tbody.appendChild(tr);
+  });
+  // attach remove handlers
+  tbody.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const sid = btn.dataset.id; const date = btn.dataset.date;
+      if(!confirm(`Remove attendance for ${sid} on ${date}?`)) return;
+      const d = loadSection(CURRENT_SECTION_KEY);
+      if(d && d.students[sid]) {
+        d.students[sid].attendance = d.students[sid].attendance.filter(a=>a.date!==date);
+        saveSection(CURRENT_SECTION_KEY, d);
+        renderAttendanceTable();
+      }
+    });
+  });
+}
+
+/* Score form */
+qs('#scoreForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  if(!CURRENT_SECTION_KEY || !CURRENT_STUDENT){ alert('Join first'); return; }
+  const subj = qs('#subj').value.trim();
+  const score = qs('#score').value.trim();
+  const total = qs('#total').value.trim();
+  const date = qs('#sdate').value || nowDate();
+  const notes = qs('#notes').value.trim();
+  if(!subj || !score || !total){ alert('Fill subject, score, total'); return; }
+  const d = loadSection(CURRENT_SECTION_KEY);
+  const s = d.students[CURRENT_STUDENT];
+  const rec = { subject:subj, score:score, total:total, date, notes, ts:Date.now() };
+  s.scores.push(rec);
+  saveSection(CURRENT_SECTION_KEY, d);
+  qs('#subj').value=''; qs('#score').value=''; qs('#total').value=''; qs('#sdate').value=''; qs('#notes').value='';
+  renderScoresTable();
+});
+
+/* renderScoresTable: all scores for section */
+function renderScoresTable(){
+  const tbody = qs('#scoresTable tbody');
+  tbody.innerHTML = '';
+  if(!CURRENT_SECTION_KEY){ tbody.innerHTML = '<tr><td colspan="6" class="muted">Join a section first</td></tr>'; return; }
+  const data = loadSection(CURRENT_SECTION_KEY);
+  const rows = [];
+  Object.values(data.students).forEach(s=>{
+    s.scores.forEach(sc => rows.push({ student:s.name, id:s.id, subject:sc.subject, score:sc.score, total:sc.total, date:sc.date, notes:sc.notes, ts:sc.ts }));
+  });
+  rows.sort((a,b)=>b.ts-a.ts);
+  if(rows.length===0){ tbody.innerHTML = '<tr><td colspan="6" class="muted">No scores yet</td></tr>'; return; }
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(r.student)}<br><small class="muted">${r.id}</small></td><td>${esc(r.subject)}</td><td>${esc(r.score)}/${esc(r.total)}</td><td>${esc(r.date)}</td><td>${esc(r.notes || '')}</td><td><button class="ghost" data-ts="${r.ts}" data-id="${r.id}">Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ts = Number(btn.dataset.ts); const id = btn.dataset.id;
+      if(!confirm('Delete this score?')) return;
+      const d = loadSection(CURRENT_SECTION_KEY);
+      d.students[id].scores = d.students[id].scores.filter(sc => sc.ts !== ts);
+      saveSection(CURRENT_SECTION_KEY, d);
+      renderScoresTable();
+    });
+  });
+}
+
+/* Export my scores (for the currently joined student) */
+qs('#exportMyScoresBtn').addEventListener('click', ()=>{
+  if(!CURRENT_SECTION_KEY || !CURRENT_STUDENT){ alert('Join first'); return; }
+  const d = loadSection(CURRENT_SECTION_KEY);
+  const s = d.students[CURRENT_STUDENT];
+  if(!s.scores || s.scores.length===0){ alert('No scores to export'); return; }
+  const rows = s.scores.map(sc => ({student:s.name, studentId:s.id, subject:sc.subject, score:sc.score, total:sc.total, date:sc.date, notes:sc.notes}));
+  const csv = toCSV(rows, ['student','studentId','subject','score','total','date','notes']);
+  downloadText(csv, `${d.meta.section}_${s.id}_scores.csv`);
+});
+
+/* Teacher login (client-side demo) */
+qs('#tLogin').addEventListener('click', ()=>{
+  const em = qs('#tEmail').value.trim();
+  const pw = qs('#tPass').value;
+  if(em === 'teacher1' && pw === 'teacher1'){
+    openAdmin();
+  } else {
+    alert('Invalid credentials (demo). Use teacher1 / teacher1.');
+  }
+});
+qs('#tClear').addEventListener('click', ()=>{ qs('#tEmail').value=''; qs('#tPass').value=''; });
+
+/* Admin open/close */
+qs('#openAdmin').addEventListener('click', openAdmin);
+qs('#adminClose').addEventListener('click', ()=> qs('#adminScreen').style.display='none');
+qs('#adminClose2').addEventListener('click', ()=> qs('#adminScreen').style.display='none');
+qs('#adminSignOut').addEventListener('click', ()=> { qs('#adminScreen').style.display='none'; alert('Signed out'); });
+
+function openAdmin(){
+  qs('#adminScreen').style.display='block';
+  renderAdminTable();
+  qs('#adminTotal').textContent = countAllStudents();
+}
+
+/* Build admin table across all sections */
+function renderAdminTable(){
+  const tbody = qs('#adminTable tbody'); tbody.innerHTML = '';
+  const all = gatherAllStudents();
+  if(all.length === 0){ tbody.innerHTML = '<tr><td colspan="8" class="muted">No students found</td></tr>'; return; }
+  all.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${esc(s.grade)}</td><td>${esc(s.section)}</td><td>${s.attendance.length}</td><td>${s.scores.length}</td><td>${s.recorded ? '✅' : '—'}</td>
+      <td class="actions">
+        <button class="ghost" data-st="${s.id}" data-section="${s.section}" data-key="${s._key}" data-act="view">View</button>
+        <button class="ghost" data-st="${s.id}" data-section="${s.section}" data-key="${s._key}" data-act="export">Export</button>
+        <button class="ghost" data-st="${s.id}" data-section="${s.section}" data-key="${s._key}" data-act="toggle">Toggle Recorded</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // attach handlers
+  tbody.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const act = btn.dataset.act;
+      const st = btn.dataset.st;
+      const k = btn.dataset.key;
+      if(act === 'view') adminViewStudent(k, st);
+      if(act === 'export') adminExportStudent(k, st);
+      if(act === 'toggle') adminToggleRecorded(k, st);
+    });
+  });
+}
+
+/* Admin helpers */
+function gatherAllStudents(){
+  const arr = [];
+  Object.keys(localStorage).forEach(k=>{
+    if(!k.startsWith('shs_')) return;
+    const sec = loadSection(k);
+    if(!sec || !sec.students) return;
+    Object.values(sec.students).forEach(s=>{
+      arr.push(Object.assign({}, s, { _key:k }));
+    });
+  });
+  return arr;
+}
+function countAllStudents(){ return gatherAllStudents().length; }
+
+function adminViewStudent(key, studentId){
+  const sec = loadSection(key);
+  if(!sec || !sec.students[studentId]){ alert('Student not found'); return; }
+  const s = sec.students[studentId];
+  let html = `Student: ${s.name} (${s.id}) — ${s.grade} ${s.strand} ${s.section}\n\nAttendance:\n`;
+  if(s.attendance.length===0) html += '  (none)\n'; else s.attendance.forEach(a => html += `  ${a.date} ${a.time}\n`);
+  html += '\nScores:\n';
+  if(s.scores.length===0) html += '  (none)\n'; else s.scores.forEach(sc => html += `  ${sc.subject} — ${sc.score}/${sc.total} (${sc.date})\n`);
+  alert(html);
+}
+
+function adminExportStudent(key, studentId){
+  const sec = loadSection(key);
+  if(!sec || !sec.students[studentId]){ alert('Student not found'); return; }
+  const s = sec.students[studentId];
+  if(!s.scores || s.scores.length===0){ alert('No scores to export for this student'); return; }
+  const rows = s.scores.map(sc => ({student:s.name, studentId:s.id, subject:sc.subject, score:sc.score, total:sc.total, date:sc.date, notes:sc.notes||''}));
+  const csv = toCSV(rows, ['student','studentId','subject','score','total','date','notes']);
+  downloadText(csv, `${sec.meta.section}_${s.id}_scores.csv`);
+  // mark recorded
+  s.recorded = true;
+  saveSection(key, sec);
+  renderAdminTable();
+  alert(`${s.name} marked as Recorded.`);
+}
+
+function adminToggleRecorded(key, studentId){
+  const sec = loadSection(key);
+  if(!sec || !sec.students[studentId]) return;
+  sec.students[studentId].recorded = !sec.students[studentId].recorded;
+  saveSection(key, sec);
+  renderAdminTable();
+}
+
+/* Export All (from admin preview) */
+qs('#exportAll').addEventListener('click', ()=>{
+  const all = gatherAllStudents();
+  if(all.length === 0){ alert('No records to export'); return; }
+  const rows = [];
+  all.forEach(s=>{
+    if(!s.scores || s.scores.length===0){
+      rows.push({student:s.name, studentId:s.id, subject:'', score:'', total:'', date:'', notes:'', section:s.section, recorded: s.recorded ? 'Yes' : 'No'});
+    } else {
+      s.scores.forEach(sc => rows.push({student:s.name, studentId:s.id, subject:sc.subject, score:sc.score, total:sc.total, date:sc.date, notes:sc.notes||'', section:s.section, recorded:s.recorded ? 'Yes' : 'No'}));
+    }
+  });
+  const csv = toCSV(rows, ['student','studentId','subject','score','total','date','notes','section','recorded']);
+  downloadText(csv, `ALL_sections_scores.csv`);
+});
+
+/* Admin search / filter (basic live) */
+qs('#adminSearch').addEventListener('input', function(){
+  const q = this.value.trim().toLowerCase();
+  const rows = q ? gatherAllStudents().filter(s=> s.id.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)) : gatherAllStudents();
+  // render small table
+  const tbody = qs('#adminTable tbody'); tbody.innerHTML = '';
+  if(rows.length===0){ tbody.innerHTML = '<tr><td colspan="8" class="muted">No students match</td></tr>'; return; }
+  rows.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${esc(s.grade)}</td><td>${esc(s.section)}</td><td>${s.attendance.length}</td><td>${s.scores.length}</td><td>${s.recorded ? '✅' : '—'}</td>
+      <td class="actions">
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="view">View</button>
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="export">Export</button>
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="toggle">Toggle</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const act=b.dataset.act, st=b.dataset.st, k=b.dataset.key;
+      if(act==='view') adminViewStudent(k,st);
+      if(act==='export') adminExportStudent(k,st);
+      if(act==='toggle') adminToggleRecorded(k,st);
+    });
+  });
+});
+
+/* Admin filter section (simple) */
+qs('#adminFilter').addEventListener('input', function(){
+  const val = this.value.trim().toLowerCase();
+  const all = gatherAllStudents().filter(s => s.section.toLowerCase().includes(val) || (s._key||'').toLowerCase().includes(val));
+  const tbody = qs('#adminTable tbody'); tbody.innerHTML = '';
+  if(all.length===0){ tbody.innerHTML = '<tr><td colspan="8" class="muted">No records</td></tr>'; return; }
+  all.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${esc(s.grade)}</td><td>${esc(s.section)}</td><td>${s.attendance.length}</td><td>${s.scores.length}</td><td>${s.recorded ? '✅' : '—'}</td>
+      <td class="actions">
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="view">View</button>
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="export">Export</button>
+        <button class="ghost" data-st="${s.id}" data-key="${s._key}" data-act="toggle">Toggle</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const act=b.dataset.act, st=b.dataset.st, k=b.dataset.key;
+      if(act==='view') adminViewStudent(k,st);
+      if(act==='export') adminExportStudent(k,st);
+      if(act==='toggle') adminToggleRecorded(k,st);
+    });
+  });
+});
+
+/* admin export section or students - basic hooks */
+qs('#exportSection').addEventListener('click', ()=>{
+  const filter = qs('#adminFilter').value.trim();
+  if(!filter) return alert('Enter section code in filter to export (e.g. ICT-11A)');
+  // find key by section
+  const key = Object.keys(localStorage).find(k=> k.startsWith('shs_') && k.includes(filter.replace(/\s+/g,'').toLowerCase()));
+  if(!key) return alert('Section not found');
+  const sec = loadSection(key);
+  const rows = [];
+  Object.values(sec.students).forEach(s=>{
+    if(!s.scores || s.scores.length===0){
+      rows.push({student:s.name, studentId:s.id, subject:'', score:'', total:'', date:'', notes:'', recorded: s.recorded ? 'Yes' : 'No'});
+    } else {
+      s.scores.forEach(sc=> rows.push({student:s.name, studentId:s.id, subject:sc.subject, score:sc.score, total:sc.total, date:sc.date, notes:sc.notes||'', recorded:s.recorded ? 'Yes' : 'No'}));
+    }
+  });
+  const csv = toCSV(rows, ['student','studentId','subject','score','total','date','notes','recorded']);
+  downloadText(csv, `${sec.meta.section}_scores.csv`);
+});
+qs('#exportStudents').addEventListener('click', ()=>{
+  const rows = [];
+  gatherAllStudents().forEach(s=>{
+    rows.push({student:s.name, studentId:s.id, grade:s.grade, section:s.section, recorded: s.recorded ? 'Yes' : 'No'});
+  });
+  if(rows.length===0) return alert('No students');
+  const csv = toCSV(rows, ['student','studentId','grade','section','recorded']);
+  downloadText(csv, `all_students.csv`);
+});
+
+/* Utility: CSV & download */
+function toCSV(rows, cols){
+  const header = cols.join(',');
+  const lines = rows.map(r => cols.map(c => `"${String(r[c] ?? '').replace(/"/g,'""')}"`).join(','));
+  return header + '\n' + lines.join('\n');
+}
+function downloadText(text, filename){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* Helper: escape HTML */
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* Show temporary message in selector */
+function showTempMsg(sel, txt, ms=2000){
+  const el = qs(sel);
+  el.style.display='block';
+  el.textContent = txt;
+  setTimeout(()=> el.style.display='none', ms);
+}
+
+/* Admin sections preview */
+function updateSectionsPreview(){
+  const tbody = qs('#sectionsTable'); tbody.innerHTML='';
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith('shs_'));
+  qs('#sectionsCount').textContent = keys.length;
+  if(keys.length===0){ tbody.innerHTML = '<tr><td colspan="3" class="muted">No sections yet</td></tr>'; return; }
+  keys.forEach(k=>{
+    const sec = loadSection(k);
+    const studentsCount = Object.keys(sec.students || {}).length;
+    const records = Object.values(sec.students||{}).reduce((acc,s)=> acc + (s.scores?.length||0) + (s.attendance?.length||0), 0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(sec.meta.section)}</td><td>${studentsCount}</td><td>${records}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* Gather all data initially and update preview */
+updateSectionsPreview();
+
+/* Small init: if user opens with no interaction, show gateway tab */
+qsa('.tab').forEach(t=>t.classList.remove('active'));
+qs('.tab[data-tab="scan"]').classList.add('active');
+qsa('.tabcontent').forEach(tc=>tc.style.display='none');
+qs('#scan').style.display='block';
+
+/* Admin render initial */
+function renderAdminTable(){ /* implemented earlier, call from openAdmin */ }
+
+/* count helpers */
+function countAllStudents(){ return gatherAllStudents().length; }
+
+/* Gather function already defined earlier */
+
+/* Initialize attendance/scores lists if currently joined */
+function initOnLoad(){
+  // if localStorage has any shs_ keys, we can load preview
+  updateSectionsPreview();
+}
+initOnLoad();
+
+</script>
+</body>
+</html>
