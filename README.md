@@ -1,1 +1,1 @@
-# ICT-attendance-checker
+LivebraTrack prototype demo
