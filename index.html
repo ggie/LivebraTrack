@@ -1,690 +1,1257 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>MFNHS — LivebraTrack (Library Inventory)</title>
-  <style>
-    :root{
-      --bg-1:#eaf4ff; --bg-2:#eef7ff;
-      --accent-b:#2563eb; --accent-c:#4f46e5;
-      --glass: rgba(255,255,255,0.66);
-      --glass-2: rgba(255,255,255,0.54);
-      --muted:#556277;
-      --success:#059669; --danger:#ef4444;
-      --card-radius:14px;
-      --soft-shadow: 0 12px 40px rgba(2,6,23,0.09);
-      --glass-border: rgba(255,255,255,0.36);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));-webkit-font-smoothing:antialiased}
-    :focus{outline:3px solid rgba(37,99,235,0.12);outline-offset:3px;border-radius:6px}
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MFNHS — LivebraTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#f4f5f7;
+  --surface:#ffffff;
+  --surface2:#f9fafb;
+  --surface3:#f1f3f5;
+  --border:#e4e7eb;
+  --border2:#d1d5db;
+  --text:#111827;
+  --text2:#374151;
+  --muted:#6b7280;
+  --muted2:#9ca3af;
+  --accent:#2d6be4;
+  --accent2:#1a4fad;
+  --accent-soft:rgba(45,107,228,0.1);
+  --accent-soft2:rgba(45,107,228,0.06);
+  --green:#059669;
+  --green-soft:rgba(5,150,105,0.1);
+  --red:#dc2626;
+  --red-soft:rgba(220,38,38,0.09);
+  --amber:#d97706;
+  --amber-soft:rgba(217,119,6,0.1);
+  --purple:#7c3aed;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 16px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.1),0 4px 12px rgba(0,0,0,0.06);
+  --radius:14px;
+  --radius-sm:8px;
+  --radius-lg:20px;
+  --transition:0.22s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:14px}
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-    /* header */
-    header{
-      position:sticky;top:0;z-index:80;background:linear-gradient(90deg,var(--accent-b),var(--accent-c));color:white;padding:12px 18px;backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(2,6,23,0.09)
-    }
-    .nav{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#16327f,#6d28d9);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px}
-    .brand h1{font-size:16px;margin:0}
-    .muted{color:rgba(0,0,0,0.5)}
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:transform var(--transition);position:relative;z-index:50
+}
+.sidebar-inner{flex:1;overflow-y:auto;padding:20px 14px}
+.main-area{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{
+  height:60px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 22px;position:sticky;top:0;z-index:30
+}
+.content{flex:1;overflow-y:auto;padding:24px}
 
-    /* layout */
-    .wrap{min-height:100vh;display:flex;flex-direction:column;padding-bottom:86px}
-    .container{max-width:1200px;margin:26px auto;padding:0 18px;display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
-    @media (max-width:980px){ .container{grid-template-columns:1fr;padding:12px} .sidebar{order:2} .main{order:1} }
+/* SIDEBAR */
+.sidebar-brand{display:flex;align-items:center;gap:11px;padding:18px 6px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.brand-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:15px;flex-shrink:0}
+.brand-name{font-weight:800;font-size:14px;line-height:1.2}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.nav-label{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin:14px 0 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);
+  color:var(--text2);font-weight:500;cursor:pointer;margin-bottom:2px;transition:all var(--transition);position:relative;
+  user-select:none
+}
+.nav-item:hover{background:var(--surface3);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;border-radius:99px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+.user-pill{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-sm);background:var(--surface3)}
+.user-avatar{width:32px;height:32px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;flex-shrink:0}
+.user-name{font-weight:700;font-size:13px}
+.user-role{font-size:11px;color:var(--muted)}
 
-    /* sidebar */
-    .sidebar{position:sticky;top:96px;padding:18px;border-radius:var(--card-radius);background:var(--glass);box-shadow:var(--soft-shadow);border:1px solid var(--glass-border);backdrop-filter: blur(8px)}
-    .nav-item{display:block;padding:10px;border-radius:10px;color:var(--accent-b);font-weight:700;margin-bottom:8px;cursor:pointer;transition:transform .12s,background .12s}
-    .nav-item:hover{transform:translateY(-3px)}
-    .nav-item.active{background:linear-gradient(90deg, rgba(37,99,235,0.08), rgba(79,70,229,0.06));border-color:rgba(37,99,235,0.12)}
-    .pill{padding:6px 8px;border-radius:999px;background:rgba(0,0,0,0.04);font-weight:700}
+/* TOPBAR */
+.topbar-left{flex:1;display:flex;align-items:center;gap:14px}
+.menu-btn{width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background var(--transition);display:none}
+.menu-btn:hover{background:var(--surface3)}
+.page-title{font-weight:700;font-size:16px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.clock-display{font-size:13px;color:var(--muted);font-weight:500;background:var(--surface3);padding:6px 12px;border-radius:var(--radius-sm);font-variant-numeric:tabular-nums;min-width:160px;text-align:center}
+.notif-btn{
+  width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;position:relative;transition:background var(--transition)
+}
+.notif-btn:hover{background:var(--surface3)}
+.notif-dot{width:8px;height:8px;background:var(--red);border-radius:99px;position:absolute;top:6px;right:6px;border:2px solid var(--surface)}
 
-    /* main */
-    .main{display:flex;flex-direction:column;gap:18px}
-    .card{background:linear-gradient(180deg,var(--glass),var(--glass-2));border-radius:12px;padding:18px;box-shadow:var(--soft-shadow);border:1px solid var(--glass-border);backdrop-filter: blur(6px);transition:transform .16s,box-shadow .16s}
-    .card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(16,24,40,0.09)}
-    .title-big{font-size:22px;margin:0 0 6px 0}
-    .subtitle{color:var(--muted);margin:0;font-size:13px}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px}
+.card-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.section-grid{display:grid;gap:16px}
 
-    /* portal */
-    .landing{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.62));box-shadow:0 18px 40px rgba(2,6,23,0.06)}
-    .portal-btn{width:240px;min-height:120px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.62));display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:16px;cursor:pointer;border:1px solid rgba(16,24,40,0.04);transition:transform .22s,box-shadow .22s}
-    .portal-btn:hover{transform:translateY(-8px);box-shadow:0 28px 60px rgba(16,24,40,0.08)}
-    .portal-emoji{font-size:26px}
-    .portal-title{font-weight:800;font-size:18px}
-    .portal-desc{color:var(--muted);font-size:13px;margin-top:6px}
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:transform var(--transition),box-shadow var(--transition)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity var(--transition)}
+.stat-card.blue::before{background:linear-gradient(135deg,rgba(45,107,228,0.04),transparent)}
+.stat-card.green::before{background:linear-gradient(135deg,rgba(5,150,105,0.04),transparent)}
+.stat-card.red::before{background:linear-gradient(135deg,rgba(220,38,38,0.04),transparent)}
+.stat-card.amber::before{background:linear-gradient(135deg,rgba(217,119,6,0.04),transparent)}
+.stat-card:hover::before{opacity:1}
+.stat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:12px}
+.stat-icon.blue{background:var(--accent-soft)}
+.stat-icon.green{background:var(--green-soft)}
+.stat-icon.red{background:var(--red-soft)}
+.stat-icon.amber{background:var(--amber-soft)}
+.stat-value{font-size:26px;font-weight:800;line-height:1}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px}
 
-    /* stats */
-    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    @media (max-width:920px){ .stats-grid{grid-template-columns:repeat(1,1fr)} }
-    .stat{padding:14px;border-radius:10px;background:linear-gradient(90deg,#fff,#f6fbff);display:flex;flex-direction:column;gap:6px}
-    .stat .label{font-size:13px;color:var(--muted)}
-    .stat .value{font-size:20px;font-weight:800}
+/* BOOKS GRID */
+.books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.book-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;
+  display:flex;flex-direction:column;gap:10px;transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+  position:relative;overflow:hidden
+}
+.book-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--border2)}
+.book-spine{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px 0 0 2px}
+.book-spine.available{background:var(--green)}
+.book-spine.borrowed{background:var(--red)}
+.book-spine.returned{background:var(--accent)}
+.book-title{font-weight:700;font-size:14px;line-height:1.4;padding-left:8px}
+.book-author{font-size:12px;color:var(--muted);padding-left:8px}
+.book-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-left:8px}
+.book-actions{display:flex;gap:6px;flex-wrap:wrap;padding-left:8px}
 
-    /* controls */
-    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    input[type="text"],select{padding:10px;border-radius:10px;border:1px solid #e6eefb;flex:1;min-width:120px}
-    .btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;transition:transform .12s,box-shadow .12s}
-    .btn.accent{background:linear-gradient(90deg,var(--accent-b),var(--accent-c));color:white}
-    .btn.ghost{background:transparent;border:1px solid rgba(16,24,40,0.06)}
-    .btn.small{padding:6px 8px;border-radius:8px}
+/* BADGES */
+.badge{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.badge.available{background:var(--green-soft);color:var(--green)}
+.badge.borrowed{background:var(--red-soft);color:var(--red)}
+.badge.returned{background:var(--accent-soft);color:var(--accent)}
+.badge.overdue{background:var(--amber-soft);color:var(--amber)}
 
-    /* grid for books (cards) */
-    .books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:12px}
-    .book-card{border-radius:12px;padding:12px;background:linear-gradient(180deg,#fff,#f7fbff);box-shadow:0 8px 20px rgba(2,6,23,0.04);display:flex;flex-direction:column;gap:10px;transition:transform .14s,box-shadow .14s}
-    .book-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(16,24,40,0.08)}
-    .book-title{font-weight:800}
-    .book-author{font-size:13px;color:var(--muted)}
-    .book-meta{display:flex;justify-content:space-between;align-items:center;gap:6px}
-    .book-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .badge{padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px}
-    .badge.available{background:rgba(6,95,70,0.08);color:var(--success)}
-    .badge.borrowed{background:rgba(239,68,68,0.08);color:var(--danger)}
+/* BUTTONS */
+.btn{
+  padding:7px 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:inherit;
+  font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:all var(--transition);white-space:nowrap
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 4px 14px rgba(45,107,228,0.3)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{background:var(--surface3)}
+.btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(220,38,38,0.15)}
+.btn-danger:hover{background:rgba(220,38,38,0.15)}
+.btn-success{background:var(--green-soft);color:var(--green);border:1px solid rgba(5,150,105,0.15)}
+.btn-success:hover{background:rgba(5,150,105,0.15)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-icon{width:32px;height:32px;padding:0;border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center}
 
-    /* shelf grid */
-    .shelf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+/* INPUTS */
+input[type="text"],input[type="password"],input[type="email"],input[type="date"],input[type="number"],select,textarea{
+  padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);
+  font-family:inherit;font-size:13px;color:var(--text);width:100%;transition:border-color var(--transition),box-shadow var(--transition);outline:none
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;font-weight:600;color:var(--text2)}
+.form-row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
 
-    /* modal */
-    .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:160;background:rgba(2,6,23,0.45);opacity:0;pointer-events:none;transition:opacity .22s}
-    .modal-backdrop.show{display:flex;opacity:1;pointer-events:auto}
-    .modal{width:100%;max-width:720px;background:linear-gradient(180deg,#fff,#f8fbff);padding:18px;border-radius:12px;box-shadow:0 30px 60px rgba(2,6,23,0.35);transform:translateY(14px) scale(.995);transition:transform .24s,opacity .18s}
-    .modal-backdrop.show .modal{transform:translateY(0) scale(1)}
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.22s
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-box{
+  background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:500px;
+  box-shadow:var(--shadow-lg);transform:translateY(16px) scale(0.98);transition:transform 0.26s cubic-bezier(0.34,1.56,0.64,1),opacity 0.22s;opacity:0;max-height:90vh;overflow-y:auto
+}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1);opacity:1}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:16px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
-    /* sticky footer */
-    .bottom-footer{position:fixed;left:0;right:0;bottom:0;height:70px;background:linear-gradient(90deg,rgba(37,99,235,0.06),rgba(79,70,229,0.04));display:flex;align-items:center;justify-content:center;z-index:200;border-top:1px solid rgba(16,24,40,0.04)}
-    .footer-inner{max-width:1200px;width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:12px}
-    @media (max-width:640px){ .books-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))} .portal-btn{width:100%} }
-  </style>
+/* NOTIFICATIONS PANEL */
+.notif-panel{
+  position:fixed;top:60px;right:0;width:360px;background:var(--surface);border-left:1px solid var(--border);
+  height:calc(100vh - 60px);z-index:100;transform:translateX(100%);transition:transform var(--transition);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.notif-panel.open{transform:translateX(0)}
+.notif-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.notif-list{flex:1;overflow-y:auto;padding:12px}
+.notif-item{padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:8px;transition:background var(--transition)}
+.notif-item:hover{background:var(--surface3)}
+.notif-item.unread{border-left:3px solid var(--accent)}
+.notif-item.overdue{border-left:3px solid var(--red)}
+.notif-title{font-weight:700;font-size:13px;margin-bottom:3px}
+.notif-msg{font-size:12px;color:var(--muted)}
+.notif-time{font-size:11px;color:var(--muted2);margin-top:5px}
+
+/* RECORDS TABLE */
+.records-table{width:100%;border-collapse:collapse}
+.records-table th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border);background:var(--surface2)}
+.records-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.records-table tr:hover td{background:var(--surface3)}
+.records-table tr:last-child td{border-bottom:none}
+
+/* ACTIVITY LOG */
+.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:99px;background:var(--accent);flex-shrink:0;margin-top:4px}
+.activity-text{font-size:13px;font-weight:500}
+.activity-time{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* QR SCANNER */
+.qr-area{border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;background:var(--surface2)}
+.qr-preview{width:100%;max-width:300px;height:220px;background:#000;border-radius:var(--radius-sm);margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.qr-overlay{position:absolute;inset:0;border:2px solid var(--accent);animation:scan 2s linear infinite}
+@keyframes scan{0%{clip-path:inset(0 0 98% 0)}100%{clip-path:inset(0 0 0 0)}}
+#qr-video{width:100%;height:100%;object-fit:cover}
+.qr-result{margin-top:12px;padding:12px;background:var(--accent-soft);border-radius:var(--radius-sm);font-size:13px;display:none}
+#qrcode-container canvas,#qrcode-container img{max-width:100%;border-radius:var(--radius-sm)}
+
+/* SHELF GRID */
+.shelf-section{margin-bottom:20px}
+.shelf-title{font-weight:800;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.shelf-books{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+
+/* SEARCH */
+.search-bar{position:relative;margin-bottom:16px}
+.search-bar input{padding-left:38px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);width:fit-content}
+.tab{padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all var(--transition)}
+.tab.active{background:var(--surface);color:var(--accent);box-shadow:var(--shadow-sm)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-text{font-size:14px;font-weight:500}
+.empty-sub{font-size:12px;color:var(--muted2);margin-top:4px}
+
+/* LOGIN SCREEN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);text-align:center}
+.login-logo{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:24px;margin:0 auto 20px}
+.login-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:6px}
+.login-sub{color:var(--muted);font-size:13px;margin-bottom:28px}
+.portal-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.portal-card{border:2px solid var(--border);border-radius:var(--radius);padding:18px 14px;cursor:pointer;transition:all var(--transition);text-align:left;background:var(--surface)}
+.portal-card:hover{border-color:var(--accent);background:var(--accent-soft2)}
+.portal-card.selected{border-color:var(--accent);background:var(--accent-soft)}
+.portal-emoji2{font-size:24px;margin-bottom:8px}
+.portal-label{font-weight:700;font-size:14px}
+.portal-desc2{font-size:12px;color:var(--muted);margin-top:3px}
+.divider{height:1px;background:var(--border);margin:16px 0;position:relative}
+.divider span{position:absolute;left:50%;transform:translateX(-50%);top:-8px;background:var(--surface);padding:0 10px;font-size:11px;color:var(--muted)}
+.error-msg{background:var(--red-soft);border:1px solid rgba(220,38,38,0.2);border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;color:var(--red);margin-bottom:12px;display:none}
+
+/* RETURN TAG */
+.returned-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700}
+
+/* MOBILE OVERLAY */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:49;display:none;opacity:0;transition:opacity var(--transition)}
+.sidebar-overlay.show{opacity:1}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn 0.3s ease forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .sidebar{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);z-index:60}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .sidebar-overlay.show{display:block}
+  .main-area{width:100%}
+  .menu-btn{display:flex}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .books-grid{grid-template-columns:1fr}
+  .notif-panel{width:100%;right:0}
+  .clock-display{display:none}
+  .portal-choices{grid-template-columns:1fr}
+}
+@media(max-width:400px){
+  .stats-row{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="brand">
-        <div class="logo">LT</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card animate-in">
+    <div class="login-logo">LT</div>
+    <h1 class="login-title">LivebraTrack</h1>
+    <p class="login-sub">MFNHS School Library Portal</p>
+
+    <div class="portal-choices" id="portal-choices">
+      <div class="portal-card" data-role="Student" onclick="selectPortal(this)">
+        <div class="portal-emoji2">🎓</div>
+        <div class="portal-label">Student</div>
+        <div class="portal-desc2">Browse & borrow books</div>
+      </div>
+      <div class="portal-card" data-role="Librarian" onclick="selectPortal(this)">
+        <div class="portal-emoji2">📚</div>
+        <div class="portal-label">Librarian</div>
+        <div class="portal-desc2">Full management access</div>
+      </div>
+    </div>
+
+    <div id="login-form" style="display:none">
+      <div id="login-error" class="error-msg"></div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label">Username</label>
+        <input type="text" id="login-user" placeholder="Enter username"/>
+      </div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-pass" placeholder="Enter password"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">Login</button>
+      <div class="divider"><span>OR</span></div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="doRegister()">Create Account</button>
+      <div style="text-align:center;margin-top:10px">
+        <span style="font-size:12px;color:var(--muted);cursor:pointer" onclick="resetPortal()">← Back</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none" class="app">
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-brand">
+        <div class="brand-icon">LT</div>
         <div>
-          <h1>MFNHS — LivebraTrack</h1>
-          <div class="muted">School library portal — Student & Librarian</div>
+          <div class="brand-name">LivebraTrack</div>
+          <div class="brand-sub">MFNHS Library</div>
         </div>
       </div>
-      <div id="userBadge" style="display:none;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.12);color:white;font-weight:700">Logged</div>
-    </div>
-  </header>
 
-  <div class="wrap">
-    <main class="container" role="main" aria-live="polite">
-      <!-- sidebar -->
-      <aside class="sidebar" aria-label="Sidebar">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div><strong>Navigation</strong><div class="muted" style="margin-top:6px">Quick links</div></div>
-          <div class="pill">MFNHS</div>
+      <div class="nav-label">Menu</div>
+      <div class="nav-item active" data-view="dashboard" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="inventory" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Inventory
+      </div>
+      <div class="nav-item" data-view="arrangement" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Shelf Arrangement
+      </div>
+      <div class="nav-item" data-view="records" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Borrower Records
+      </div>
+      <div class="nav-item" data-view="search" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Search Books
+      </div>
+      <div class="nav-item" data-view="qr" onclick="navigate(this)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M17 17h4v4h-4z"/><path d="M14 17h.01"/><path d="M17 14h.01"/></svg>
+        QR Scanner
+      </div>
+
+      <div class="nav-label" style="margin-top:20px">Account</div>
+      <div class="nav-item" onclick="doSignOut()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar-sb">?</div>
+        <div>
+          <div class="user-name" id="user-name-sb">—</div>
+          <div class="user-role" id="user-role-sb">—</div>
         </div>
+      </div>
+    </div>
+  </aside>
 
-        <nav>
-          <div class="nav-item active" data-view="home">Home</div>
-          <div class="nav-item" data-view="dashboard">Dashboard</div>
-          <div class="nav-item" data-view="inventory">Inventory</div>
-          <div class="nav-item" data-view="arrangement">Arrangement</div>
-          <div class="nav-item" data-view="search">Search</div>
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-left">
+        <div class="page-title" id="page-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="clock-display" id="clock-display">—</div>
+        <button class="notif-btn" onclick="toggleNotif()" id="notif-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot" id="notif-dot" style="display:none"></div>
+        </button>
+      </div>
+    </div>
 
-          <div style="margin-top:14px;border-top:1px dashed rgba(16,24,40,0.04);padding-top:12px">
-            <div class="muted">Role</div>
-            <div id="sidebarRole" style="margin-top:8px;font-weight:800;color:var(--accent-b)">Guest</div>
+    <!-- VIEWS -->
+    <div class="content" id="content">
+
+      <!-- DASHBOARD -->
+      <div id="view-dashboard" class="animate-in">
+        <div class="stats-row" id="stats-row"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Recent Activity</div><div class="card-sub">Latest library actions</div></div>
+            </div>
+            <div id="activity-log"></div>
           </div>
-        </nav>
-
-        <div style="margin-top:14px">
-          <div class="muted">Demo Controls</div>
-          <button id="resetData" class="btn small" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(16,24,40,0.06)">Reset Demo Data</button>
-          <div style="margin-top:12px" class="muted">Built-in sample DepEd books</div>
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Overdue Books</div><div class="card-sub">Books past due date</div></div>
+            </div>
+            <div id="overdue-list"></div>
+          </div>
         </div>
-      </aside>
+      </div>
 
-      <!-- main -->
-      <section class="main">
-        <!-- home / landing -->
-        <section id="view-home" class="card" role="region">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <h2 class="title-big">Welcome to MFNHS Portal</h2>
-              <div class="muted">Choose your portal — Student or Librarian. Local changes persist in this browser.</div>
-            </div>
-            <div class="muted">Hybrid semi-minimal + neo-modern UI</div>
-          </div>
-
-          <div class="landing" style="margin-top:16px">
-            <div id="chooseStudent" class="portal-btn" tabindex="0" role="button">
-              <div class="portal-emoji">🎓</div>
-              <div class="portal-title">Student Portal</div>
-              <div class="portal-desc">Browse & borrow books. Return easily.</div>
-            </div>
-
-            <div id="chooseLibrarian" class="portal-btn" tabindex="0" role="button">
-              <div class="portal-emoji">👩‍💼</div>
-              <div class="portal-title">Librarian Portal</div>
-              <div class="portal-desc">Full inventory management.</div>
+      <!-- INVENTORY -->
+      <div id="view-inventory" style="display:none" class="animate-in">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Books Inventory</div><div class="card-sub" id="inv-count">0 books</div></div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="filter-status" style="width:auto;padding:7px 10px" onchange="renderInventory()">
+                <option value="">All Status</option>
+                <option value="Available">Available</option>
+                <option value="Borrowed">Borrowed</option>
+              </select>
+              <select id="filter-shelf" style="width:auto;padding:7px 10px" onchange="renderInventory()">
+                <option value="">All Shelves</option>
+                <option value="A">Shelf A</option>
+                <option value="B">Shelf B</option>
+                <option value="C">Shelf C</option>
+              </select>
+              <button class="btn btn-primary" id="btn-add-book" style="display:none" onclick="openBookModal('add')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Book
+              </button>
             </div>
           </div>
-        </section>
-
-        <!-- dashboard -->
-        <section id="view-dashboard" class="card" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div class="muted">Dashboard</div>
-              <h2 class="title-big">Library Overview</h2>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <div id="lastUpdated" class="muted">—</div>
-              <button id="returnAllBtn" class="btn small" style="display:none;background:linear-gradient(90deg,#10b981,#059669);color:white">Return All</button>
-              <button id="signOut" class="btn small" style="margin-left:8px;display:none;background:transparent;border:1px solid rgba(16,24,40,0.06)">Sign out</button>
-            </div>
+          <div class="search-bar">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="inv-filter" placeholder="Filter by title or author…" oninput="renderInventory()"/>
           </div>
+          <div class="books-grid" id="books-grid"></div>
+        </div>
+      </div>
 
-          <div style="margin-top:14px" class="stats-grid">
-            <div class="stat"><div class="label">Total Books</div><div class="value" id="statTotal">0</div></div>
-            <div class="stat"><div class="label">Available</div><div class="value" id="statAvailable">0</div></div>
-            <div class="stat"><div class="label">Borrowed</div><div class="value" id="statBorrowed">0</div></div>
-          </div>
+      <!-- ARRANGEMENT -->
+      <div id="view-arrangement" style="display:none" class="animate-in">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Shelf Arrangement</div><div class="card-sub">Books organized by shelf</div></div></div>
+          <div id="shelves-container"></div>
+        </div>
+      </div>
 
-          <div style="margin-top:14px" class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <h3 style="margin:0">Recent Activity</h3>
-              <div class="muted">Latest actions</div>
-            </div>
-            <div id="activityLog" style="margin-top:12px"></div>
-          </div>
-        </section>
-
-        <!-- inventory (grid cards) -->
-        <section id="view-inventory" class="card" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div class="muted">Inventory</div>
-              <h2 class="title-big">Books</h2>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input id="filter" type="text" placeholder="Filter by title or author…" style="padding:10px;border-radius:10px;border:1px solid #e6eefb;min-width:160px"/>
-              <button id="btnAdd" class="btn accent" style="display:none">+ Add Book</button>
+      <!-- RECORDS -->
+      <div id="view-records" style="display:none" class="animate-in">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Borrower Records</div><div class="card-sub">Complete borrowing history</div></div>
+            <div style="display:flex;gap:8px">
+              <select id="rec-filter" style="width:auto;padding:7px 10px" onchange="renderRecords()">
+                <option value="">All</option>
+                <option value="Borrowed">Currently Borrowed</option>
+                <option value="Returned">Returned</option>
+                <option value="Overdue">Overdue</option>
+              </select>
             </div>
           </div>
-
-          <div id="booksGrid" class="books-grid"></div>
-        </section>
-
-        <!-- arrangement -->
-        <section id="view-arrangement" class="card" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div><div class="muted">Arrangement</div><h2 class="title-big">Shelves</h2></div>
+          <div class="search-bar">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="rec-search" placeholder="Search by book or borrower…" oninput="renderRecords()"/>
           </div>
-          <div id="shelves" class="shelf-grid" style="margin-top:12px"></div>
-        </section>
+          <div style="overflow-x:auto">
+            <table class="records-table" id="records-table">
+              <thead><tr><th>Book</th><th>Borrower</th><th>Borrow Date</th><th>Due Date</th><th>Return Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="records-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-        <!-- search (grid results) -->
-        <section id="view-search" class="card" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div class="muted">Search</div>
-              <h2 class="title-big">Find Books</h2>
+      <!-- SEARCH -->
+      <div id="view-search" style="display:none" class="animate-in">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Search Books</div></div></div>
+          <div class="search-bar">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-input" placeholder="Search by title, author, shelf…" oninput="renderSearch()"/>
+          </div>
+          <div class="books-grid" id="search-results"></div>
+        </div>
+      </div>
+
+      <!-- QR -->
+      <div id="view-qr" style="display:none" class="animate-in">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">QR Scanner</div><div class="card-sub">Scan a book QR code</div></div></div>
+            <div class="qr-area">
+              <div class="qr-preview" id="qr-preview">
+                <video id="qr-video" autoplay playsinline muted></video>
+                <div style="position:absolute;inset:10px;border:2px solid rgba(45,107,228,0.6);border-radius:8px;pointer-events:none"></div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+                <button class="btn btn-primary btn-sm" onclick="startScanner()">Start Camera</button>
+                <button class="btn btn-ghost btn-sm" onclick="stopScanner()">Stop</button>
+              </div>
+              <div class="qr-result" id="qr-result"></div>
+            </div>
+            <div style="margin-top:14px">
+              <div class="form-label" style="margin-bottom:6px">Or enter Book ID manually</div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="qr-manual" placeholder="Book ID (e.g. b_abc123)"/>
+                <button class="btn btn-primary" onclick="qrLookup(document.getElementById('qr-manual').value)">Look up</button>
+              </div>
             </div>
           </div>
-
-          <div style="margin-top:12px">
-            <input id="searchInput" type="text" placeholder="Search by title or author..." style="width:100%;padding:10px;border-radius:10px;border:1px solid #e6eefb"/>
-            <div id="searchResults" class="books-grid" style="margin-top:12px"></div>
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Generate QR</div><div class="card-sub">Print a QR for any book</div></div></div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Select Book</label>
+              <select id="qr-gen-select" onchange="generateQR()">
+                <option value="">— Select a book —</option>
+              </select>
+            </div>
+            <div id="qrcode-container" style="text-align:center;padding:10px"></div>
+            <div id="qr-gen-info" style="display:none;margin-top:10px;padding:10px;background:var(--surface3);border-radius:var(--radius-sm);font-size:12px"></div>
           </div>
-        </section>
+        </div>
+      </div>
 
-      </section>
-    </main>
+    </div><!-- /content -->
+  </div><!-- /main-area -->
+</div><!-- /app -->
 
-    <!-- sticky footer -->
-    <div class="bottom-footer" aria-hidden="true">
-      <div class="footer-inner">
-        <div style="font-weight:700;color:var(--accent-b)">Developed by: Carbonera, Carl Vincent • Cavanes, Mark Zildjian • Pinote, Jebby • Santos, Sittih Nafiza • Terrado, Jia Maxine</div>
-        <div style="color:var(--muted);font-size:13px">© 2025 MFNHS — LivebraTrack. All Rights Reserved.</div>
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-header">
+    <div style="font-weight:700">Notifications</div>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
+  </div>
+  <div class="notif-list" id="notif-list"></div>
+</div>
+
+<!-- BOOK MODAL -->
+<div class="modal-overlay" id="modal-book">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-book-title">Add Book</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Title *</label><input type="text" id="m-title" placeholder="Book title"/></div>
+        <div class="form-group"><label class="form-label">Author *</label><input type="text" id="m-author" placeholder="Author name"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Shelf</label>
+          <select id="m-shelf"><option value="A">Shelf A</option><option value="B">Shelf B</option><option value="C">Shelf C</option><option value="D">Shelf D</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select id="m-status"><option value="Available">Available</option><option value="Borrowed">Borrowed</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ISBN (optional)</label><input type="text" id="m-isbn" placeholder="ISBN number"/></div>
+        <div class="form-group"><label class="form-label">Category</label>
+          <select id="m-cat"><option>General</option><option>Science</option><option>Math</option><option>English</option><option>Filipino</option><option>History</option><option>ICT</option><option>PE/Health</option><option>Values</option></select>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Book modal -->
-  <div id="modal" class="modal-backdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <h3 id="modalTitle">Add Book</h3>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
-        <input id="mTitle" placeholder="Title" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefb"/>
-        <input id="mAuthor" placeholder="Author" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefb"/>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:12px">
-        <select id="mShelf" style="padding:10px;border-radius:8px;border:1px solid #e6eefb">
-          <option value="A">Shelf A</option><option value="B">Shelf B</option><option value="C">Shelf C</option>
-        </select>
-        <select id="mStatus" style="padding:10px;border-radius:8px;border:1px solid #e6eefb">
-          <option value="Available">Available</option><option value="Borrowed">Borrowed</option>
-        </select>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
-        <button id="mCancel" class="btn ghost">Cancel</button>
-        <button id="mSave" class="btn accent">Save</button>
-      </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-book')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">Save Book</button>
     </div>
   </div>
+</div>
 
-  <!-- confirm modal -->
-  <div id="confirm" class="modal-backdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <h3 id="confirmTitle">Confirm</h3>
-      <div id="confirmText" class="muted" style="margin-top:8px"></div>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
-        <button id="confirmNo" class="btn ghost">Cancel</button>
-        <button id="confirmYes" class="btn accent">Yes</button>
+<!-- BORROW MODAL -->
+<div class="modal-overlay" id="modal-borrow">
+  <div class="modal-box">
+    <div class="modal-title">Borrow Book</div>
+    <div id="borrow-book-info" style="padding:12px;background:var(--surface3);border-radius:var(--radius-sm);margin-bottom:16px"></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group"><label class="form-label">Borrower Name *</label><input type="text" id="b-name" placeholder="Full name"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Student ID (optional)</label><input type="text" id="b-id" placeholder="ID number"/></div>
+        <div class="form-group"><label class="form-label">Section (optional)</label><input type="text" id="b-section" placeholder="Grade/Section"/></div>
       </div>
+      <div class="form-group"><label class="form-label">Due Date *</label><input type="date" id="b-due"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-borrow')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmBorrow()">Confirm Borrow</button>
     </div>
   </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-title" id="confirm-title">Confirm</div>
+    <div id="confirm-text" class="card-sub" style="margin-top:6px;font-size:14px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn btn-primary" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR RESULT MODAL -->
+<div class="modal-overlay" id="modal-qr-result">
+  <div class="modal-box" style="max-width:440px;text-align:center">
+    <div class="modal-title">Book Found</div>
+    <div id="qr-result-content" style="margin:16px 0"></div>
+    <div style="display:flex;gap:8px;justify-content:center" id="qr-result-actions"></div>
+    <div class="modal-footer" style="justify-content:center"><button class="btn btn-ghost" onclick="closeModal('modal-qr-result')">Close</button></div>
+  </div>
+</div>
 
 <script>
-/* -------------------------
-   LivebraTrack single HTML
-   CRUD, Borrow/Return, Grid
-   ------------------------- */
+// ============================================================
+//  LIVEBRA TRACK — Enhanced Version
+//  Fully local, persistent, feature-complete
+// ============================================================
 
-const LS_KEY = 'livebra_books_v1';
-const LS_ACT = 'livebra_activity_v1';
-const LS_ROLE = 'livebra_role_v1';
+const LS = {
+  BOOKS:'lt_books_v3', ACT:'lt_activity_v3', USERS:'lt_users_v3',
+  SESSION:'lt_session_v3', RECORDS:'lt_records_v3', NOTIFS:'lt_notifs_v3'
+};
 
-function makeId(){ return 'b_'+Math.random().toString(36).slice(2,9); }
-function now(){ return new Date().toISOString(); }
+function rid(){ return '_'+Math.random().toString(36).slice(2,9); }
+function ts(){ return new Date().toISOString(); }
+function fmtDate(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}); }catch(e){ return iso; } }
+function fmtDatetime(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; } }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function defaultDue(){ const d=new Date(); d.setDate(d.getDate()+7); return d.toISOString().split('T')[0]; }
 
-/* sample DepEd books */
-const sample = [
-  { id: makeId(), title:"English 7 Learner's Module", author:"DepEd", shelf:"A", status:"Available" },
-  { id: makeId(), title:"Mathematics 7 Textbook", author:"DepEd", shelf:"A", status:"Available" },
-  { id: makeId(), title:"Science 7 Learner's Guide", author:"DepEd", shelf:"B", status:"Available" },
-  { id: makeId(), title:"MAPEH 7", author:"DepEd", shelf:"C", status:"Available" },
-  { id: makeId(), title:"Araling Panlipunan 8", author:"DepEd", shelf:"B", status:"Available" },
-  { id: makeId(), title:"Filipino 8", author:"DepEd", shelf:"A", status:"Available" },
-  { id: makeId(), title:"ICT Fundamentals 8", author:"DepEd", shelf:"A", status:"Available" },
-  { id: makeId(), title:"English 9 Learner's Module", author:"DepEd", shelf:"A", status:"Available" },
-  { id: makeId(), title:"Mathematics in the Modern World", author:"DepEd", shelf:"B", status:"Available" },
-  { id: makeId(), title:"Earth & Life Science 9", author:"DepEd", shelf:"B", status:"Available" },
-  { id: makeId(), title:"Araling Panlipunan 10", author:"DepEd", shelf:"C", status:"Available" },
-  { id: makeId(), title:"21st Century Literature", author:"DepEd", shelf:"B", status:"Available" },
-  { id: makeId(), title:"Physical Education 10", author:"DepEd", shelf:"C", status:"Available" },
-  { id: makeId(), title:"ICT Empowerment Technology 10", author:"DepEd", shelf:"C", status:"Available" }
+// ---- SAMPLE DATA ----
+const sampleBooks = [
+  {id:rid(),title:"English 7 Learner's Module",author:"DepEd",shelf:"A",status:"Available",isbn:"",category:"English",addedAt:ts()},
+  {id:rid(),title:"Mathematics 7 Textbook",author:"DepEd",shelf:"A",status:"Available",isbn:"",category:"Math",addedAt:ts()},
+  {id:rid(),title:"Science 7 Learner's Guide",author:"DepEd",shelf:"B",status:"Available",isbn:"",category:"Science",addedAt:ts()},
+  {id:rid(),title:"MAPEH 7",author:"DepEd",shelf:"C",status:"Available",isbn:"",category:"PE/Health",addedAt:ts()},
+  {id:rid(),title:"Araling Panlipunan 8",author:"DepEd",shelf:"B",status:"Available",isbn:"",category:"History",addedAt:ts()},
+  {id:rid(),title:"Filipino 8",author:"DepEd",shelf:"A",status:"Available",isbn:"",category:"Filipino",addedAt:ts()},
+  {id:rid(),title:"ICT Fundamentals 8",author:"DepEd",shelf:"A",status:"Available",isbn:"",category:"ICT",addedAt:ts()},
+  {id:rid(),title:"English 9 Learner's Module",author:"DepEd",shelf:"A",status:"Available",isbn:"",category:"English",addedAt:ts()},
+  {id:rid(),title:"Mathematics in the Modern World",author:"DepEd",shelf:"B",status:"Available",isbn:"",category:"Math",addedAt:ts()},
+  {id:rid(),title:"Earth & Life Science 9",author:"DepEd",shelf:"B",status:"Available",isbn:"",category:"Science",addedAt:ts()},
+  {id:rid(),title:"Araling Panlipunan 10",author:"DepEd",shelf:"C",status:"Available",isbn:"",category:"History",addedAt:ts()},
+  {id:rid(),title:"21st Century Literature",author:"DepEd",shelf:"B",status:"Available",isbn:"",category:"English",addedAt:ts()},
+  {id:rid(),title:"Physical Education 10",author:"DepEd",shelf:"C",status:"Available",isbn:"",category:"PE/Health",addedAt:ts()},
+  {id:rid(),title:"ICT Empowerment Technology 10",author:"DepEd",shelf:"C",status:"Available",isbn:"",category:"ICT",addedAt:ts()}
 ];
 
-/* storage helpers with recovery */
-function loadBooks(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(sample)); return JSON.parse(JSON.stringify(sample)); }
-    const parsed = JSON.parse(raw);
-    if(!Array.isArray(parsed)) throw new Error('bad format');
-    return parsed;
-  }catch(e){
-    localStorage.setItem(LS_KEY, JSON.stringify(sample));
-    return JSON.parse(JSON.stringify(sample));
+// ---- STORAGE ----
+function load(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function save(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
+
+let books    = load(LS.BOOKS,null)||JSON.parse(JSON.stringify(sampleBooks));
+let activity = load(LS.ACT,[]);
+let users    = load(LS.USERS,[{username:'admin',password:'admin123',role:'Librarian',name:'Administrator'},{username:'student',password:'student123',role:'Student',name:'Sample Student'}]);
+let records  = load(LS.RECORDS,[]);
+let notifs   = load(LS.NOTIFS,[]);
+let session  = load(LS.SESSION,null);
+
+function persist(){ save(LS.BOOKS,books); save(LS.ACT,activity); save(LS.USERS,users); save(LS.RECORDS,records); save(LS.NOTIFS,notifs); }
+
+// ---- SESSION ----
+let currentUser = null;
+let selectedPortalRole = null;
+
+function checkSession(){
+  if(session && session.username){
+    const u = users.find(x=>x.username===session.username);
+    if(u){ currentUser=u; launchApp(); return; }
   }
-}
-function loadActivity(){ try { return JSON.parse(localStorage.getItem(LS_ACT)) || []; } catch(e){ localStorage.setItem(LS_ACT,'[]'); return []; } }
-function saveBooks(arr){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
-function saveActivity(arr){ localStorage.setItem(LS_ACT, JSON.stringify(arr)); }
-
-let books = loadBooks();
-let activity = loadActivity();
-let role = localStorage.getItem(LS_ROLE) || null;
-
-/* DOM refs */
-const navItems = document.querySelectorAll('.nav-item');
-const views = {
-  home: document.getElementById('view-home'),
-  dashboard: document.getElementById('view-dashboard'),
-  inventory: document.getElementById('view-inventory'),
-  arrangement: document.getElementById('view-arrangement'),
-  search: document.getElementById('view-search')
-};
-const chooseStudent = document.getElementById('chooseStudent');
-const chooseLibrarian = document.getElementById('chooseLibrarian');
-const userBadge = document.getElementById('userBadge');
-const sidebarRole = document.getElementById('sidebarRole');
-const signOutBtn = document.getElementById('signOut');
-const returnAllBtn = document.getElementById('returnAllBtn');
-const lastUpdated = document.getElementById('lastUpdated');
-const statTotal = document.getElementById('statTotal');
-const statAvailable = document.getElementById('statAvailable');
-const statBorrowed = document.getElementById('statBorrowed');
-const activityLog = document.getElementById('activityLog');
-
-const booksGrid = document.getElementById('booksGrid');
-const filter = document.getElementById('filter');
-const btnAdd = document.getElementById('btnAdd');
-
-const shelves = document.getElementById('shelves');
-
-const searchInput = document.getElementById('searchInput');
-const searchResults = document.getElementById('searchResults');
-
-/* modal & confirm refs */
-const modal = document.getElementById('modal');
-const modalTitle = document.getElementById('modalTitle');
-const mTitle = document.getElementById('mTitle');
-const mAuthor = document.getElementById('mAuthor');
-const mShelf = document.getElementById('mShelf');
-const mStatus = document.getElementById('mStatus');
-const mCancel = document.getElementById('mCancel');
-const mSave = document.getElementById('mSave');
-
-const confirmBox = document.getElementById('confirm');
-const confirmTitle = document.getElementById('confirmTitle');
-const confirmText = document.getElementById('confirmText');
-const confirmYes = document.getElementById('confirmYes');
-const confirmNo = document.getElementById('confirmNo');
-
-/* state for modal */
-let editingId = null;
-let confirmCallback = null;
-
-/* initialize */
-init();
-function init(){
-  bindNav();
-  applyRoleUI();
-  renderAll();
-  attachEvents();
-  // default view based on role
-  showView(role ? 'dashboard' : 'home');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
 }
 
-/* navigation */
-function bindNav(){
-  navItems.forEach(n => n.addEventListener('click',()=>{
-    navItems.forEach(x=>x.classList.remove('active'));
-    n.classList.add('active');
-    showView(n.dataset.view);
-  }));
+function selectPortal(el){
+  document.querySelectorAll('.portal-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPortalRole = el.dataset.role;
+  document.getElementById('login-form').style.display='block';
+  document.getElementById('portal-choices').style.display='none';
+}
+function resetPortal(){
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('portal-choices').style.display='grid';
+  selectedPortalRole=null;
+  document.querySelectorAll('.portal-card').forEach(c=>c.classList.remove('selected'));
 }
 
-/* show view */
-function showView(name){
-  Object.values(views).forEach(v=>v.style.display='none');
-  if(views[name]) views[name].style.display = 'block';
-  if(name==='dashboard') renderDashboard();
-  if(name==='inventory') renderInventory();
-  if(name==='arrangement') renderShelves();
-  if(name==='search') renderSearch();
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-error');
+  if(!u||!p){ showLoginError('Please fill in all fields.'); return; }
+  const found=users.find(x=>x.username===u&&x.password===p);
+  if(!found){ showLoginError('Invalid username or password.'); return; }
+  if(selectedPortalRole && found.role!==selectedPortalRole){ showLoginError(`This account is a ${found.role} account, not ${selectedPortalRole}.`); return; }
+  currentUser=found;
+  session={username:found.username};
+  save(LS.SESSION,session);
+  launchApp();
 }
 
-/* role selection */
-chooseStudent.addEventListener('click', ()=> setRole('Student'));
-chooseLibrarian.addEventListener('click', ()=> setRole('Librarian'));
-chooseStudent.addEventListener('keydown', e=>{ if(e.key==='Enter') setRole('Student'); });
-chooseLibrarian.addEventListener('keydown', e=>{ if(e.key==='Enter') setRole('Librarian'); });
+function doRegister(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-error');
+  if(!u||!p){ showLoginError('Please enter a username and password.'); return; }
+  if(u.length<3){ showLoginError('Username must be at least 3 characters.'); return; }
+  if(p.length<6){ showLoginError('Password must be at least 6 characters.'); return; }
+  if(users.find(x=>x.username===u)){ showLoginError('Username already exists.'); return; }
+  const role=selectedPortalRole||'Student';
+  const newUser={username:u,password:p,role,name:u};
+  users.push(newUser);
+  save(LS.USERS,users);
+  currentUser=newUser;
+  session={username:u};
+  save(LS.SESSION,session);
+  launchApp();
+}
 
-function setRole(r){
-  role = r;
-  localStorage.setItem(LS_ROLE, role);
-  applyRoleUI();
-  // go to dashboard
+function showLoginError(msg){
+  const el=document.getElementById('login-error');
+  el.textContent=msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none',3500);
+}
+
+function doSignOut(){
+  currentUser=null; session=null;
+  save(LS.SESSION,null);
+  stopScanner();
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('portal-choices').style.display='grid';
+  document.querySelectorAll('.portal-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+}
+
+function launchApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  // Update UI for role
+  document.getElementById('user-name-sb').textContent=currentUser.name||currentUser.username;
+  document.getElementById('user-role-sb').textContent=currentUser.role;
+  document.getElementById('user-avatar-sb').textContent=(currentUser.name||currentUser.username).charAt(0).toUpperCase();
+  document.getElementById('btn-add-book').style.display=currentUser.role==='Librarian'?'inline-flex':'none';
+  checkDueDates();
+  navigate(document.querySelector('.nav-item[data-view="dashboard"]'));
+  startClock();
+}
+
+// ---- NAVIGATION ----
+let currentView='dashboard';
+function navigate(el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.querySelector('.nav-item[data-view="dashboard"]').classList.add('active');
-  showView('dashboard');
-  renderAll();
+  el.classList.add('active');
+  const v=el.dataset.view;
+  currentView=v;
+  document.querySelectorAll('#content > div').forEach(d=>d.style.display='none');
+  const target=document.getElementById('view-'+v);
+  if(target){ target.style.display='block'; target.classList.add('animate-in'); }
+  const titles={dashboard:'Dashboard',inventory:'Books Inventory',arrangement:'Shelf Arrangement',records:'Borrower Records',search:'Search Books',qr:'QR Scanner'};
+  document.getElementById('page-title').textContent=titles[v]||v;
+  closeSidebar();
+  renderView(v);
 }
-function applyRoleUI(){
-  if(role){
-    userBadge.style.display = 'inline-flex';
-    userBadge.textContent = role==='Librarian' ? 'Librarian' : 'Student';
-    sidebarRole.textContent = role;
-    btnAdd.style.display = role==='Librarian' ? 'inline-block' : 'none';
-    signOutBtn.style.display = 'inline-block';
-    returnAllBtn.style.display = 'inline-block';
-  } else {
-    userBadge.style.display = 'none';
-    sidebarRole.textContent = 'Guest';
-    btnAdd.style.display = 'none';
-    signOutBtn.style.display = 'none';
-    returnAllBtn.style.display = 'none';
+function renderView(v){
+  if(v==='dashboard') renderDashboard();
+  if(v==='inventory') renderInventory();
+  if(v==='arrangement') renderShelves();
+  if(v==='records') renderRecords();
+  if(v==='search') renderSearch();
+  if(v==='qr') populateQRSelect();
+}
+
+// ---- CLOCK ----
+function startClock(){
+  function tick(){
+    const now=new Date();
+    document.getElementById('clock-display').textContent=now.toLocaleString('en-PH',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
   }
+  tick(); setInterval(tick,1000);
 }
 
-/* sign out */
-signOutBtn.addEventListener('click', ()=>{
-  localStorage.removeItem(LS_ROLE);
-  role = null;
-  applyRoleUI();
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.querySelector('.nav-item[data-view="home"]').classList.add('active');
-  showView('home');
-});
-
-/* render convenience */
-function renderAll(){
-  renderDashboard();
-  renderInventory();
-  renderShelves();
-  renderActivity();
-  renderSearch();
+// ---- SIDEBAR TOGGLE ----
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  const ov=document.getElementById('sidebar-overlay');
+  ov.classList.toggle('show'); ov.style.display=ov.classList.contains('show')?'block':'none';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  const ov=document.getElementById('sidebar-overlay');
+  ov.classList.remove('show'); ov.style.display='none';
 }
 
-/* dashboard */
+// ---- NOTIFICATIONS ----
+function toggleNotif(){
+  document.getElementById('notif-panel').classList.toggle('open');
+  renderNotifs();
+}
+function renderNotifs(){
+  const list=document.getElementById('notif-list');
+  if(notifs.length===0){ list.innerHTML='<div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">No notifications</div></div>'; return; }
+  list.innerHTML='';
+  notifs.slice().reverse().forEach(n=>{
+    const d=document.createElement('div');
+    d.className='notif-item'+(n.read?'':' '+(n.type==='overdue'?'overdue':'unread'));
+    d.innerHTML=`<div class="notif-title">${esc(n.title)}</div><div class="notif-msg">${esc(n.msg)}</div><div class="notif-time">${fmtDatetime(n.time)}</div>`;
+    d.onclick=()=>{ n.read=true; save(LS.NOTIFS,notifs); updateNotifDot(); d.classList.remove('unread','overdue'); };
+    list.appendChild(d);
+  });
+}
+function markAllRead(){ notifs.forEach(n=>n.read=true); save(LS.NOTIFS,notifs); updateNotifDot(); renderNotifs(); }
+function pushNotif(title,msg,type='info'){
+  notifs.push({id:rid(),title,msg,time:ts(),read:false,type});
+  save(LS.NOTIFS,notifs);
+  updateNotifDot();
+}
+function updateNotifDot(){
+  const unread=notifs.filter(n=>!n.read).length;
+  const dot=document.getElementById('notif-dot');
+  const navBadge=document.querySelector('.nav-badge');
+  dot.style.display=unread>0?'block':'none';
+  if(navBadge) navBadge.textContent=unread;
+}
+function checkDueDates(){
+  const today2=new Date(); today2.setHours(0,0,0,0);
+  records.filter(r=>r.status==='Borrowed').forEach(r=>{
+    const due=new Date(r.dueDate); due.setHours(0,0,0,0);
+    const diff=Math.round((due-today2)/(86400000));
+    if(diff<0){
+      const key='overdue_'+r.id;
+      if(!notifs.find(n=>n.id===key)){
+        notifs.push({id:key,title:'Overdue Book',msg:`"${r.bookTitle}" borrowed by ${r.borrowerName} was due ${fmtDate(r.dueDate)}`,time:ts(),read:false,type:'overdue'});
+      }
+    } else if(diff<=2){
+      const key='due_soon_'+r.id+'_'+today();
+      if(!notifs.find(n=>n.id===key)){
+        notifs.push({id:key,title:'Due Soon',msg:`"${r.bookTitle}" borrowed by ${r.borrowerName} is due ${fmtDate(r.dueDate)}`,time:ts(),read:false,type:'warning'});
+      }
+    }
+  });
+  save(LS.NOTIFS,notifs);
+  updateNotifDot();
+}
+
+// ---- ACTIVITY ----
+function addActivity(text){ activity.unshift({id:rid(),time:ts(),text}); activity=activity.slice(0,300); save(LS.ACT,activity); }
+
+// ---- DASHBOARD ----
 function renderDashboard(){
-  statTotal.textContent = books.length;
-  const borrowed = books.filter(b=>b.status==='Borrowed').length;
-  statBorrowed.textContent = borrowed;
-  statAvailable.textContent = books.length - borrowed;
-  lastUpdated.textContent = activity.length ? new Date(activity[0].time).toLocaleString() : '—';
+  const borrowed=books.filter(b=>b.status==='Borrowed').length;
+  const available=books.filter(b=>b.status==='Available').length;
+  const today2=new Date(); today2.setHours(0,0,0,0);
+  const overdue=records.filter(r=>{
+    if(r.status!=='Borrowed') return false;
+    const d=new Date(r.dueDate); d.setHours(0,0,0,0); return d<today2;
+  }).length;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card blue"><div class="stat-icon blue">📚</div><div class="stat-value">${books.length}</div><div class="stat-label">Total Books</div></div>
+    <div class="stat-card green"><div class="stat-icon green">✅</div><div class="stat-value">${available}</div><div class="stat-label">Available</div></div>
+    <div class="stat-card red"><div class="stat-icon red">📤</div><div class="stat-value">${borrowed}</div><div class="stat-label">Borrowed</div></div>
+    <div class="stat-card amber"><div class="stat-icon amber">⚠️</div><div class="stat-value">${overdue}</div><div class="stat-label">Overdue</div></div>
+  `;
+  // Activity
+  const al=document.getElementById('activity-log');
+  if(activity.length===0){ al.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No activity yet</div></div>'; }
+  else { al.innerHTML=activity.slice(0,8).map(a=>`<div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">${esc(a.text)}</div><div class="activity-time">${fmtDatetime(a.time)}</div></div></div>`).join(''); }
+  // Overdue list
+  const ol=document.getElementById('overdue-list');
+  const overdueRecs=records.filter(r=>{ if(r.status!=='Borrowed') return false; const d=new Date(r.dueDate); d.setHours(0,0,0,0); return d<today2; });
+  if(overdueRecs.length===0){ ol.innerHTML='<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">No overdue books</div></div>'; }
+  else { ol.innerHTML=overdueRecs.slice(0,6).map(r=>`<div class="activity-item"><div class="activity-dot" style="background:var(--red)"></div><div><div class="activity-text">${esc(r.bookTitle)}</div><div class="activity-time">${esc(r.borrowerName)} — Due: ${fmtDate(r.dueDate)}</div></div></div>`).join(''); }
+  // Mobile responsive dashboard grid
+  const dg=document.getElementById('dashboard-grid');
+  if(window.innerWidth<700) dg.style.gridTemplateColumns='1fr';
+  else dg.style.gridTemplateColumns='1fr 1fr';
 }
 
-/* activity log */
-function renderActivity(){
-  activityLog.innerHTML = '';
-  activity.slice(0,20).forEach(a=>{
-    const div = document.createElement('div');
-    div.style.padding='10px'; div.style.borderRadius='10px'; div.style.background='linear-gradient(90deg,#fff,#fbfdff)'; div.style.marginBottom='8px';
-    div.innerHTML = `<div style="font-weight:700">${escape(a.text)}</div><div class="muted" style="font-size:12px;margin-top:6px">${new Date(a.time).toLocaleString()}</div>`;
-    activityLog.appendChild(div);
-  });
-}
-
-/* inventory grid */
+// ---- INVENTORY ----
+let editingBookId=null;
 function renderInventory(){
-  const q = (filter.value || '').trim().toLowerCase();
-  booksGrid.innerHTML = '';
-  const filtered = books.filter(b => {
-    if(!q) return true;
-    return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q);
+  const q=(document.getElementById('inv-filter').value||'').trim().toLowerCase();
+  const fs=document.getElementById('filter-status').value;
+  const fsh=document.getElementById('filter-shelf').value;
+  const filtered=books.filter(b=>{
+    const mq=!q||(b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q)||(b.isbn||'').includes(q));
+    const ms=!fs||b.status===fs;
+    const msh=!fsh||b.shelf===fsh;
+    return mq&&ms&&msh;
   });
-  if(filtered.length === 0){
-    booksGrid.innerHTML = `<div style="grid-column:1/-1;color:var(--muted);text-align:center;padding:18px;border-radius:8px;background:linear-gradient(90deg,#fff,#fbfdff)">No books found.</div>`;
+  document.getElementById('inv-count').textContent=`${filtered.length} of ${books.length} books`;
+  const grid=document.getElementById('books-grid');
+  if(filtered.length===0){ grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">No books found</div><div class="empty-sub">Try adjusting your filters</div></div>'; return; }
+  grid.innerHTML='';
+  filtered.forEach(b=>grid.appendChild(makeBookCard(b)));
+}
+
+function makeBookCard(b){
+  const today2=new Date(); today2.setHours(0,0,0,0);
+  const rec=records.find(r=>r.bookId===b.id&&r.status==='Borrowed');
+  let overdue=false;
+  if(rec){ const d=new Date(rec.dueDate); d.setHours(0,0,0,0); overdue=d<today2; }
+  const spineClass=b.status==='Available'?'available':'borrowed';
+  const badgeHTML=b.status==='Available'
+    ?'<span class="badge available">● Available</span>'
+    :(overdue?'<span class="badge overdue">⚠ Overdue</span>':'<span class="badge borrowed">● Borrowed</span>');
+
+  const card=document.createElement('div');
+  card.className='book-card';
+  card.innerHTML=`
+    <div class="book-spine ${spineClass}"></div>
+    <div>
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author)}</div>
+    </div>
+    <div class="book-meta">
+      <span style="font-size:11px;color:var(--muted)">Shelf ${esc(b.shelf)} · ${esc(b.category||'General')}</span>
+      ${badgeHTML}
+    </div>
+    ${rec?`<div style="font-size:11px;color:var(--muted);padding-left:8px">Borrower: <strong>${esc(rec.borrowerName)}</strong> · Due: ${fmtDate(rec.dueDate)}</div>`:''}
+    <div class="book-actions"></div>
+  `;
+  const actions=card.querySelector('.book-actions');
+  if(currentUser.role==='Librarian'){
+    const e=document.createElement('button'); e.className='btn btn-ghost btn-sm'; e.textContent='Edit';
+    e.onclick=()=>openBookModal('edit',b.id); actions.appendChild(e);
+    const del=document.createElement('button'); del.className='btn btn-danger btn-sm'; del.textContent='Delete';
+    del.onclick=()=>confirmDialog('Delete Book',`Delete "${b.title}"?`,()=>{
+      addActivity(`Deleted: ${b.title}`);
+      records.filter(r=>r.bookId===b.id).forEach(r=>r.status='Returned');
+      books=books.filter(x=>x.id!==b.id);
+      persist(); renderAll();
+    }); actions.appendChild(del);
+  }
+  if(b.status==='Available'){
+    const bw=document.createElement('button'); bw.className='btn btn-primary btn-sm'; bw.textContent='Borrow';
+    bw.onclick=()=>openBorrowModal(b.id); actions.appendChild(bw);
+  } else {
+    const rt=document.createElement('button'); rt.className='btn btn-success btn-sm'; rt.textContent='Return';
+    rt.onclick=()=>confirmDialog('Return Book',`Mark "${b.title}" as returned?`,()=>doReturn(b.id)); actions.appendChild(rt);
+  }
+  return card;
+}
+
+function openBookModal(mode,id){
+  editingBookId=id||null;
+  document.getElementById('modal-book-title').textContent=mode==='add'?'Add New Book':'Edit Book';
+  if(mode==='add'){
+    ['m-title','m-author','m-isbn'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('m-shelf').value='A';
+    document.getElementById('m-status').value='Available';
+    document.getElementById('m-cat').value='General';
+  } else {
+    const b=books.find(x=>x.id===id); if(!b) return;
+    document.getElementById('m-title').value=b.title;
+    document.getElementById('m-author').value=b.author;
+    document.getElementById('m-isbn').value=b.isbn||'';
+    document.getElementById('m-shelf').value=b.shelf;
+    document.getElementById('m-status').value=b.status;
+    document.getElementById('m-cat').value=b.category||'General';
+  }
+  openModal('modal-book');
+}
+
+function saveBook(){
+  const t=document.getElementById('m-title').value.trim();
+  const a=document.getElementById('m-author').value.trim();
+  if(!t||!a){ alert('Title and Author are required.'); return; }
+  if(editingBookId){
+    const idx=books.findIndex(x=>x.id===editingBookId);
+    if(idx===-1) return;
+    Object.assign(books[idx],{title:t,author:a,isbn:document.getElementById('m-isbn').value.trim(),shelf:document.getElementById('m-shelf').value,status:document.getElementById('m-status').value,category:document.getElementById('m-cat').value});
+    addActivity(`Edited: ${t}`);
+  } else {
+    const nb={id:rid(),title:t,author:a,isbn:document.getElementById('m-isbn').value.trim(),shelf:document.getElementById('m-shelf').value,status:'Available',category:document.getElementById('m-cat').value,addedAt:ts()};
+    books.unshift(nb);
+    addActivity(`Added: ${t}`);
+    pushNotif('New Book Added',`"${t}" by ${a} has been added to the library.`);
+  }
+  persist(); closeModal('modal-book'); renderAll();
+}
+
+// ---- BORROW ----
+let borrowingBookId=null;
+function openBorrowModal(id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  borrowingBookId=id;
+  document.getElementById('borrow-book-info').innerHTML=`<strong>${esc(b.title)}</strong> by ${esc(b.author)} · Shelf ${esc(b.shelf)}`;
+  document.getElementById('b-name').value='';
+  document.getElementById('b-id').value='';
+  document.getElementById('b-section').value='';
+  document.getElementById('b-due').value=defaultDue();
+  openModal('modal-borrow');
+}
+
+function confirmBorrow(){
+  const name=document.getElementById('b-name').value.trim();
+  const due=document.getElementById('b-due').value;
+  if(!name){ alert('Borrower name is required.'); return; }
+  if(!due){ alert('Due date is required.'); return; }
+  const b=books.find(x=>x.id===borrowingBookId); if(!b) return;
+  b.status='Borrowed';
+  const rec={
+    id:rid(),bookId:b.id,bookTitle:b.title,
+    borrowerName:name,borrowerId:document.getElementById('b-id').value.trim(),
+    borrowerSection:document.getElementById('b-section').value.trim(),
+    borrowDate:ts(),dueDate:due,returnDate:null,status:'Borrowed'
+  };
+  records.unshift(rec);
+  addActivity(`[Borrowed] ${b.title} → ${name}`);
+  pushNotif('Book Borrowed',`"${b.title}" borrowed by ${name}. Due: ${fmtDate(due)}`);
+  persist(); closeModal('modal-borrow'); renderAll();
+}
+
+function doReturn(bookId){
+  const b=books.find(x=>x.id===bookId); if(!b) return;
+  b.status='Available';
+  const rec=records.find(r=>r.bookId===bookId&&r.status==='Borrowed');
+  if(rec){ rec.status='Returned'; rec.returnDate=ts(); }
+  addActivity(`[Returned] ${b.title}`);
+  pushNotif('Book Returned',`"${b.title}" has been returned.`);
+  // Remove overdue/due-soon notifs for this record
+  if(rec){ notifs=notifs.filter(n=>!n.id.startsWith('overdue_'+rec.id)&&!n.id.startsWith('due_soon_'+rec.id)); }
+  persist(); renderAll();
+}
+
+// ---- SHELVES ----
+function renderShelves(){
+  const grouped={};
+  books.forEach(b=>{ (grouped[b.shelf]=grouped[b.shelf]||[]).push(b); });
+  const c=document.getElementById('shelves-container');
+  const keys=Object.keys(grouped).sort();
+  if(keys.length===0){ c.innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">No shelves yet</div></div>'; return; }
+  c.innerHTML=keys.map(k=>`
+    <div class="shelf-section">
+      <div class="shelf-title">
+        <span style="width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block"></span>
+        Shelf ${esc(k)} <span style="font-weight:400;color:var(--muted)">(${grouped[k].length} books)</span>
+      </div>
+      <div class="shelf-books">
+        ${grouped[k].map(b=>`
+          <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${b.status==='Available'?'var(--green)':'var(--red)'};border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div>
+              <div style="font-weight:600;font-size:13px">${esc(b.title)}</div>
+              <div style="font-size:11px;color:var(--muted)">${esc(b.author)}</div>
+            </div>
+            <span class="badge ${b.status==='Available'?'available':'borrowed'}">${b.status}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---- RECORDS ----
+function renderRecords(){
+  const q=(document.getElementById('rec-search').value||'').trim().toLowerCase();
+  const fs=document.getElementById('rec-filter').value;
+  const today2=new Date(); today2.setHours(0,0,0,0);
+
+  let filtered=records.filter(r=>{
+    const mq=!q||(r.bookTitle.toLowerCase().includes(q)||r.borrowerName.toLowerCase().includes(q));
+    let ms=true;
+    if(fs==='Borrowed') ms=r.status==='Borrowed';
+    else if(fs==='Returned') ms=r.status==='Returned';
+    else if(fs==='Overdue'){ const d=new Date(r.dueDate); d.setHours(0,0,0,0); ms=r.status==='Borrowed'&&d<today2; }
+    return mq&&ms;
+  });
+
+  const tbody=document.getElementById('records-tbody');
+  if(filtered.length===0){ tbody.innerHTML=`<tr><td colspan="7" class="empty">No records found</td></tr>`; return; }
+
+  tbody.innerHTML=filtered.map(r=>{
+    const d=new Date(r.dueDate); d.setHours(0,0,0,0);
+    const isOverdue=r.status==='Borrowed'&&d<today2;
+    const statusBadge=r.status==='Returned'
+      ?`<span class="badge returned">✓ Returned</span>`
+      :(isOverdue?`<span class="badge overdue">⚠ Overdue</span>`:`<span class="badge borrowed">● Borrowed</span>`);
+    const returnLabel=r.returnDate?`<div class="returned-tag">✓ Returned ${fmtDate(r.returnDate)}</div>`:'—';
+    const actions=r.status==='Borrowed'&&currentUser.role==='Librarian'
+      ?`<button class="btn btn-success btn-sm" onclick="confirmDialog('Return Book','Return this book?',()=>doReturn('${r.bookId}'))">Return</button>`:'';
+    return `<tr>
+      <td><strong>${esc(r.bookTitle)}</strong></td>
+      <td>${esc(r.borrowerName)}${r.borrowerSection?`<br><span style="font-size:11px;color:var(--muted)">${esc(r.borrowerSection)}</span>`:''}</td>
+      <td>${fmtDate(r.borrowDate)}</td>
+      <td>${fmtDate(r.dueDate)}</td>
+      <td>${returnLabel}</td>
+      <td>${statusBadge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- SEARCH ----
+function renderSearch(){
+  const q=(document.getElementById('search-input').value||'').trim().toLowerCase();
+  const grid=document.getElementById('search-results');
+  if(!q){ grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔎</div><div class="empty-text">Type to search books</div></div>'; return; }
+  const results=books.filter(b=>b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q)||b.shelf.toLowerCase().includes(q)||(b.isbn||'').includes(q)||(b.category||'').toLowerCase().includes(q));
+  if(results.length===0){ grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">😕</div><div class="empty-text">No books match your search</div></div>'; return; }
+  grid.innerHTML='';
+  results.forEach(b=>grid.appendChild(makeBookCard(b)));
+}
+
+// ---- QR CODE ----
+let scanStream=null;
+let scanInterval=null;
+
+function populateQRSelect(){
+  const sel=document.getElementById('qr-gen-select');
+  sel.innerHTML='<option value="">— Select a book —</option>'+books.map(b=>`<option value="${b.id}">${esc(b.title)}</option>`).join('');
+}
+
+function generateQR(){
+  const id=document.getElementById('qr-gen-select').value;
+  const container=document.getElementById('qrcode-container');
+  const info=document.getElementById('qr-gen-info');
+  container.innerHTML='';
+  if(!id){ info.style.display='none'; return; }
+  const b=books.find(x=>x.id===id); if(!b) return;
+  new QRCode(container,{text:b.id,width:180,height:180,colorDark:'#111827',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  info.style.display='block';
+  info.innerHTML=`<strong>${esc(b.title)}</strong><br>Author: ${esc(b.author)} · Shelf: ${esc(b.shelf)}<br>ID: <code>${esc(b.id)}</code>`;
+}
+
+async function startScanner(){
+  stopScanner();
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    scanStream=stream;
+    const video=document.getElementById('qr-video');
+    video.srcObject=stream;
+    await video.play();
+    // Try to use BarcodeDetector if available
+    if('BarcodeDetector' in window){
+      const detector=new BarcodeDetector({formats:['qr_code']});
+      scanInterval=setInterval(async()=>{
+        try{
+          const codes=await detector.detect(video);
+          if(codes.length>0){ qrLookup(codes[0].rawValue); stopScanner(); }
+        }catch(e){}
+      },600);
+    } else {
+      document.getElementById('qr-result').style.display='block';
+      document.getElementById('qr-result').innerHTML='⚠️ BarcodeDetector not supported in this browser. Use manual entry below.';
+    }
+  }catch(e){
+    document.getElementById('qr-result').style.display='block';
+    document.getElementById('qr-result').innerHTML='⚠️ Camera access denied or unavailable. Use manual entry below.';
+  }
+}
+
+function stopScanner(){
+  if(scanInterval){ clearInterval(scanInterval); scanInterval=null; }
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  const v=document.getElementById('qr-video'); if(v) v.srcObject=null;
+}
+
+function qrLookup(val){
+  if(!val) return;
+  const v=val.trim();
+  const b=books.find(x=>x.id===v||x.isbn===v||x.title.toLowerCase()===v.toLowerCase());
+  const res=document.getElementById('qr-result');
+  if(!b){
+    res.style.display='block'; res.innerHTML=`❌ No book found for: <strong>${esc(v)}</strong>`;
     return;
   }
-  filtered.forEach(b=>{
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.innerHTML = `
-      <div><div class="book-title">${escape(b.title)}</div><div class="book-author">${escape(b.author)}</div></div>
-      <div class="book-meta"><div>Shelf ${escape(b.shelf)}</div><div>${b.status==='Available'?'<span class="badge available">Available</span>':'<span class="badge borrowed">Borrowed</span>'}</div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="book-actions"></div>
-        <div style="color:var(--muted);font-size:12px">${b.id.slice(-5)}</div>
-      </div>`;
-    // actions
-    const actions = card.querySelector('.book-actions');
-    if(role==='Librarian'){
-      const editBtn = document.createElement('button'); editBtn.className='btn ghost small'; editBtn.textContent='Edit';
-      editBtn.addEventListener('click', ()=> openModal('edit', b.id));
-      const delBtn = document.createElement('button'); delBtn.className='btn ghost small'; delBtn.textContent='Delete';
-      delBtn.addEventListener('click', ()=> confirmAction('Delete book', `Delete "${b.title}"?`, ()=> deleteBook(b.id)));
-      actions.appendChild(editBtn); actions.appendChild(delBtn);
-    }
-    if(b.status === 'Available'){
-      const borrowBtn = document.createElement('button'); borrowBtn.className='btn accent small'; borrowBtn.textContent='Borrow';
-      borrowBtn.addEventListener('click', ()=> confirmAction('Borrow book', `Borrow "${b.title}"?`, ()=> borrowBook(b.id)));
-      actions.appendChild(borrowBtn);
-    } else {
-      const returnBtn = document.createElement('button'); returnBtn.className='btn ghost small'; returnBtn.textContent='Return';
-      returnBtn.addEventListener('click', ()=> confirmAction('Return book', `Return "${b.title}"?`, ()=> returnBook(b.id)));
-      actions.appendChild(returnBtn);
-    }
-    booksGrid.appendChild(card);
-  });
-}
-
-/* shelves */
-function renderShelves(){
-  const grouped = {};
-  books.forEach(b => (grouped[b.shelf] = grouped[b.shelf] || []).push(b));
-  shelves.innerHTML = '';
-  const keys = Object.keys(grouped).sort();
-  if(keys.length===0){ shelves.innerHTML = `<div class="muted">No shelves available</div>`; return; }
-  keys.forEach(k=>{
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.style.padding='12px';
-    card.innerHTML = `<h4 style="margin:0 0 8px 0">Shelf ${escape(k)} (${grouped[k].length})</h4><ul style="list-style:none;padding:0;margin:0">${grouped[k].map(it=>`<li style="padding:8px;border-radius:8px;background:linear-gradient(90deg,#fff,#fbfdff);margin-bottom:8px;display:flex;justify-content:space-between">${escape(it.title)}<span style="opacity:.75">${it.status==='Available'?'<span style="color:var(--success)">●</span>':'<span style="color:var(--danger)">●</span>'}</span></li>`).join('')}</ul>`;
-    shelves.appendChild(card);
-  });
-}
-
-/* search */
-function renderSearch(){
-  const q = (searchInput.value || '').trim().toLowerCase();
-  const rows = books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
-  searchResults.innerHTML = '';
-  if(rows.length===0){ searchResults.innerHTML = `<div style="grid-column:1/-1;color:var(--muted);padding:12px;border-radius:8px">No results</div>`; return; }
-  rows.forEach(b=>{
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.innerHTML = `<div><div class="book-title">${escape(b.title)}</div><div class="book-author">${escape(b.author)}</div></div>
-      <div class="book-meta"><div>Shelf ${escape(b.shelf)}</div><div>${b.status==='Available'?'<span class="badge available">Available</span>':'<span class="badge borrowed">Borrowed</span>'}</div></div>
-      <div style="display:flex;gap:8px">${b.status==='Available'?`<button class="btn accent small" onclick="confirmAction('Borrow book','Borrow &ldquo;${escape(b.title)}&rdquo;?', ()=>borrowBook('${b.id}'))">Borrow</button>`:`<button class="btn ghost small" onclick="confirmAction('Return book','Return &ldquo;${escape(b.title)}&rdquo;?', ()=>returnBook('${b.id}'))">Return</button>`}</div>`;
-    searchResults.appendChild(card);
-  });
-}
-
-/* CRUD operations */
-function openModal(mode, id){
-  editingId = id || null;
-  if(mode === 'add'){
-    modalTitle.textContent = 'Add Book';
-    mTitle.value=''; mAuthor.value=''; mShelf.value='A'; mStatus.value='Available';
+  res.style.display='none';
+  const rec=records.find(r=>r.bookId===b.id&&r.status==='Borrowed');
+  document.getElementById('qr-result-content').innerHTML=`
+    <div style="padding:14px;background:var(--surface3);border-radius:var(--radius-sm);text-align:left;margin-bottom:12px">
+      <strong style="font-size:16px">${esc(b.title)}</strong><br>
+      <span style="color:var(--muted)">${esc(b.author)} · Shelf ${esc(b.shelf)}</span><br>
+      <span class="badge ${b.status==='Available'?'available':'borrowed'}" style="margin-top:6px">${b.status}</span>
+      ${rec?`<br><small style="color:var(--muted)">Borrowed by: ${esc(rec.borrowerName)} · Due: ${fmtDate(rec.dueDate)}</small>`:''}
+    </div>
+  `;
+  const actions=document.getElementById('qr-result-actions');
+  actions.innerHTML='';
+  if(b.status==='Available'){
+    const bw=document.createElement('button'); bw.className='btn btn-primary'; bw.textContent='Borrow This Book';
+    bw.onclick=()=>{ closeModal('modal-qr-result'); openBorrowModal(b.id); }; actions.appendChild(bw);
   } else {
-    modalTitle.textContent = 'Edit Book';
-    const b = books.find(x=>x.id===id);
-    if(!b) return;
-    mTitle.value = b.title; mAuthor.value = b.author; mShelf.value = b.shelf; mStatus.value = b.status;
+    const rt=document.createElement('button'); rt.className='btn btn-success'; rt.textContent='Return This Book';
+    rt.onclick=()=>{ closeModal('modal-qr-result'); confirmDialog('Return Book',`Return "${b.title}"?`,()=>doReturn(b.id)); }; actions.appendChild(rt);
   }
-  showModal(modal);
-}
-btnAdd && btnAdd.addEventListener('click', ()=> openModal('add'));
-
-mCancel.addEventListener('click', ()=> hideModal(modal));
-mSave.addEventListener('click', ()=>{
-  const t = (mTitle.value||'').trim(); const a = (mAuthor.value||'').trim();
-  const s = mShelf.value; const st = mStatus.value;
-  if(!t || !a){ alert('Please enter both title and author'); return; }
-  if(editingId){
-    const idx = books.findIndex(x=>x.id===editingId);
-    if(idx===-1){ alert('Book not found'); hideModal(modal); return; }
-    books[idx].title = t; books[idx].author = a; books[idx].shelf = s; books[idx].status = st;
-    pushActivity(`Edited: ${t}`);
-  } else {
-    const nb = { id: makeId(), title:t, author:a, shelf:s, status:st };
-    books.unshift(nb);
-    pushActivity(`Added: ${t}`);
-  }
-  saveBooks(books); saveActivity(activity); hideModal(modal); renderAll();
-});
-
-/* delete */
-function deleteBook(id){
-  const idx = books.findIndex(b=>b.id===id); if(idx===-1) return;
-  pushActivity(`Deleted: ${books[idx].title}`);
-  books.splice(idx,1);
-  saveBooks(books); renderAll();
+  openModal('modal-qr-result');
 }
 
-/* borrow/return */
-function borrowBook(id){
-  const b = books.find(x=>x.id===id); if(!b) return;
-  if(b.status === 'Borrowed'){ alert('Already borrowed'); return; }
-  const borrower = prompt('Borrower name:') || 'Unknown';
-  b.status = 'Borrowed';
-  pushActivity(`[Borrowed] ${b.title} — ${borrower}`);
-  saveBooks(books); renderAll();
-}
-function returnBook(id){
-  const b = books.find(x=>x.id===id); if(!b) return;
-  if(b.status === 'Available'){ alert('Not borrowed'); return; }
-  b.status = 'Available';
-  pushActivity(`[Returned] ${b.title}`);
-  saveBooks(books); renderAll();
+// ---- MODALS ----
+function openModal(id){ const m=document.getElementById(id); m.classList.add('open'); m.setAttribute('aria-hidden','false'); }
+function closeModal(id){ const m=document.getElementById(id); m.classList.remove('open'); m.setAttribute('aria-hidden','true'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) closeModal(m.id); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id)); });
+
+let confirmCb=null;
+function confirmDialog(title,text,cb){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-text').textContent=text;
+  confirmCb=cb;
+  document.getElementById('confirm-yes').onclick=()=>{ if(confirmCb) confirmCb(); closeModal('modal-confirm'); };
+  openModal('modal-confirm');
 }
 
-/* Return All borrowed books */
-returnAllBtn.addEventListener('click', ()=> confirmAction('Return All', 'Return ALL borrowed books?', ()=> {
-  let changed = false;
-  books.forEach(b => { if(b.status==='Borrowed'){ b.status='Available'; changed=true; } });
-  if(changed){ pushActivity('Returned all borrowed books'); saveBooks(books); renderAll(); alert('All borrowed books returned.'); } else { alert('No borrowed books found.'); }
-}));
-
-/* confirm wrapper */
-function confirmAction(title, text, cb){
-  confirmTitle.textContent = title;
-  confirmText.innerHTML = text;
-  confirmBox.classList.add('show'); confirmBox.style.display='flex'; confirmBox.setAttribute('aria-hidden','false');
-  confirmCallback = cb;
-  const yes = ()=>{ try{ confirmCallback && confirmCallback(); } finally { closeConfirm(); } };
-  confirmYes.onclick = yes;
-  confirmNo.onclick = closeConfirm;
-}
-function closeConfirm(){ confirmBox.classList.remove('show'); confirmBox.style.display='none'; confirmBox.setAttribute('aria-hidden','true'); confirmYes.onclick = null; confirmNo.onclick = null; confirmCallback = null; }
-
-/* activity */
-function pushActivity(text){
-  const entry = { id: makeId(), time: now(), text };
-  activity.unshift(entry); activity = activity.slice(0,300); saveActivity(activity);
-  renderActivity();
+// ---- RENDER ALL ----
+function renderAll(){
+  if(currentView==='dashboard') renderDashboard();
+  if(currentView==='inventory') renderInventory();
+  if(currentView==='arrangement') renderShelves();
+  if(currentView==='records') renderRecords();
+  if(currentView==='search') renderSearch();
 }
 
-/* helpers */
-function escape(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ---- INIT ----
+window.addEventListener('resize',()=>{ if(currentView==='dashboard') renderDashboard(); });
+checkSession();
 
-function saveBooks(arr){ try{ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }catch(e){ console.error(e); } }
-function saveActivity(arr){ try{ localStorage.setItem(LS_ACT, JSON.stringify(arr)); }catch(e){ console.error(e); } }
-
-/* modal show/hide */
-function showModal(el){ el.classList.add('show'); el.style.display='flex'; el.setAttribute('aria-hidden','false'); }
-function hideModal(el){ el.classList.remove('show'); el.style.display='none'; el.setAttribute('aria-hidden','true'); }
-
-/* events */
-function attachEvents(){
-  filter.addEventListener('input', debounce(()=> renderInventory(), 180));
-  searchInput.addEventListener('input', debounce(()=> renderSearch(), 180));
-  document.getElementById('resetData').addEventListener('click', ()=>{
-    if(!confirm('Reset demo data? This will overwrite current library.')) return;
-    books = JSON.parse(JSON.stringify(sample));
-    activity = [];
-    saveBooks(books); saveActivity(activity); pushActivity('Reset demo data'); renderAll(); alert('Demo reset done.');
-  });
-  document.querySelectorAll('.modal-backdrop').forEach(m=>{
-    m.addEventListener('click', e=>{ if(e.target===m) hideModal(m); });
-  });
-}
-
-/* utils */
-function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t = setTimeout(()=>fn(...a), ms); }; }
-
-/* initial render */
-renderAll();
-renderInventory();
-renderShelves();
-renderActivity();
-renderSearch();
-
+// Periodic due date check every 5 minutes
+setInterval(()=>{ if(currentUser) checkDueDates(); }, 300000);
 </script>
 </body>
 </html>
